@@ -1,17 +1,17 @@
-﻿# ðŸŽª CONSEARCH - Professional Concert Booking Platform
+# 🎪 CONSEARCH - Professional Concert Booking Platform
 
 > A modern, secure, enterprise-grade concert booking application with professional authentication system
 
-## ðŸŒŸ Features
+## 🌟 Features
 
-### ðŸŽ« Concert Management
-- ðŸŽµ **9 Major Concerts** - International artists (NewJeans, Blackpink, Seventeen, etc.)
-- ðŸŽ­ **18 Local Events** - Indonesian UMKM events and local artists
-- ðŸ’° **Multiple Pricing Tiers** - VIP, Premium, Regular seating options
-- ðŸ–¼ï¸ **Custom Images** - Each concert has beautiful custom imagery
-- ðŸ“… **Event Calendar** - Browse and discover upcoming events
+### 🎫 Concert Management
+- 🎵 **9 Major Concerts** - International artists (NewJeans, Blackpink, Seventeen, etc.)
+- 🎭 **18 Local Events** - Indonesian UMKM events and local artists
+- 💰 **Multiple Pricing Tiers** - VIP, Premium, Regular seating options
+- 🖼️ **Custom Images** - Each concert has beautiful custom imagery
+- 📅 **Event Calendar** - Browse and discover upcoming events
 
-### ðŸ” Professional Authentication
+### 🔐 Professional Authentication
 - **User Registration** - Email-based account creation with validation
 - **Secure Login** - Encrypted password authentication with JWT
 - **Session Management** - 24-hour token expiration, auto-refresh
@@ -19,14 +19,14 @@
 - **User Profiles** - View and edit personal information
 - **Password Strength Indicator** - Real-time feedback during registration
 
-### ðŸŽ¨ Beautiful UI/UX
+### 🎨 Beautiful UI/UX
 - **Glassmorphism Design** - Modern blur effects and transparency
 - **Responsive Layout** - Mobile, tablet, and desktop optimized
 - **Smooth Animations** - Cubic-bezier transitions and effects
 - **Dark Theme** - Easy on the eyes, modern aesthetic
 - **Bilingual Support** - English and Indonesian interface
 
-### ðŸ’¾ Data Management
+### 💾 Data Management
 - **Event Database** - Complete concert and event information
 - **Booking History** - Track all purchased tickets
 - **PostgreSQL Ready** - Production-grade database support
@@ -34,7 +34,7 @@
 
 ---
 
-## ðŸš€ Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js (v14+)
@@ -67,11 +67,11 @@ npm start
 
 ---
 
-## ðŸ“– Usage Guide
+## 📖 Usage Guide
 
 ### For End Users
 
-#### 1ï¸âƒ£ Create Account
+#### 1️⃣ Create Account
 ```
 1. Click "Create Account" in the user menu
 2. Enter your full name, email, and password
@@ -80,7 +80,7 @@ npm start
 5. You're instantly logged in!
 ```
 
-#### 2ï¸âƒ£ Sign In
+#### 2️⃣ Sign In
 ```
 1. Click "Sign In" in the user menu
 2. Enter your email and password
@@ -88,7 +88,7 @@ npm start
 4. Welcome back!
 ```
 
-#### 3ï¸âƒ£ Book a Concert
+#### 3️⃣ Book a Concert
 ```
 1. Click on any concert card
 2. Review event details
@@ -98,7 +98,7 @@ npm start
 6. Check "My Tickets" for confirmation
 ```
 
-#### 4ï¸âƒ£ Sign Out
+#### 4️⃣ Sign Out
 ```
 1. Click your profile icon (top right)
 2. Click "Sign Out"
@@ -107,66 +107,66 @@ npm start
 
 ---
 
-## ðŸ—ï¸ Architecture
+## 🏗️ Architecture
 
 ### Frontend Structure
 ```
 public/
-â”œâ”€â”€ index.html              # Main application (1093 lines)
-â”œâ”€â”€ login.html              # Login page
-â”œâ”€â”€ register.html           # Registration page
-â””â”€â”€ images/                 # Concert images
-    â”œâ”€â”€ fanmeet1.jpg
-    â”œâ”€â”€ fanmeet2.jpeg
-    â”œâ”€â”€ konser1-7.jpeg
-    â””â”€â”€ ...
+├── index.html              # Main application (1093 lines)
+├── login.html              # Login page
+├── register.html           # Registration page
+└── images/                 # Concert images
+    ├── fanmeet1.jpg
+    ├── fanmeet2.jpeg
+    ├── konser1-7.jpeg
+    └── ...
 ```
 
 ### Backend Structure
 ```
 app.js                       # Express server with auth APIs
-â”œâ”€â”€ Authentication Endpoints (5 routes)
-â”œâ”€â”€ Concert APIs (2 routes)
-â”œâ”€â”€ Metrics Endpoint (1 route)
-â””â”€â”€ Middleware (JWT verification, CORS, session)
+├── Authentication Endpoints (5 routes)
+├── Concert APIs (2 routes)
+├── Metrics Endpoint (1 route)
+└── Middleware (JWT verification, CORS, session)
 ```
 
 ### Database Schema
 ```sql
 users
-â”œâ”€â”€ id (Primary Key)
-â”œâ”€â”€ email (Unique)
-â”œâ”€â”€ password_hash
-â”œâ”€â”€ full_name
-â”œâ”€â”€ profile_picture
-â”œâ”€â”€ created_at
-â””â”€â”€ updated_at
+├── id (Primary Key)
+├── email (Unique)
+├── password_hash
+├── full_name
+├── profile_picture
+├── created_at
+└── updated_at
 ```
 
 ---
 
-## ðŸ” Security Features
+## 🔐 Security Features
 
 ### Password Protection
-- âœ… **bcryptjs** - Industry-standard password hashing
-- âœ… **10 Salt Rounds** - Cryptographically secure
-- âœ… **Comparison Delay** - Prevents timing attacks
+- ✅ **bcryptjs** - Industry-standard password hashing
+- ✅ **10 Salt Rounds** - Cryptographically secure
+- ✅ **Comparison Delay** - Prevents timing attacks
 
 ### Token Security
-- âœ… **JWT Tokens** - Stateless, signed authentication
-- âœ… **24-Hour Expiry** - Automatic token invalidation
-- âœ… **Cryptographic Signing** - Token tampering detection
-- âœ… **HttpOnly Cookies** - Protection against XSS
+- ✅ **JWT Tokens** - Stateless, signed authentication
+- ✅ **24-Hour Expiry** - Automatic token invalidation
+- ✅ **Cryptographic Signing** - Token tampering detection
+- ✅ **HttpOnly Cookies** - Protection against XSS
 
 ### API Security
-- âœ… **CORS Protection** - Cross-origin request validation
-- âœ… **Token Middleware** - Automatic route protection
-- âœ… **Input Validation** - Frontend and backend validation
-- âœ… **Error Masking** - Generic error messages
+- ✅ **CORS Protection** - Cross-origin request validation
+- ✅ **Token Middleware** - Automatic route protection
+- ✅ **Input Validation** - Frontend and backend validation
+- ✅ **Error Masking** - Generic error messages
 
 ---
 
-## ðŸ“š API Endpoints
+## 📚 API Endpoints
 
 ### Authentication APIs
 
@@ -284,7 +284,7 @@ Response:
 
 ---
 
-## ðŸ“Š Technical Stack
+## 📊 Technical Stack
 
 | Layer | Technology | Version | Purpose |
 |-------|-----------|---------|---------|
@@ -298,7 +298,7 @@ Response:
 
 ---
 
-## ðŸŽ¯ Core Events Data
+## 🎯 Core Events Data
 
 ### Major Concerts (9 Events)
 1. **CAN THIS LOVE BE TRANSLATED?** - The Kasablanka Hall - GRATIS
@@ -316,7 +316,7 @@ Jazz Fusion, Indie Acoustic, Electronic Beats, Hip Hop Battle, Reggae Vibes, Roc
 
 ---
 
-## âš™ï¸ Configuration
+## ⚙️ Configuration
 
 ### Environment Variables (.env)
 ```env
@@ -359,7 +359,7 @@ maxAge: 24 * 60 * 60 * 1000  // Change to desired milliseconds
 
 ---
 
-## ðŸ› Troubleshooting
+## 🐛 Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
@@ -374,7 +374,7 @@ maxAge: 24 * 60 * 60 * 1000  // Change to desired milliseconds
 
 ---
 
-## ðŸ“ˆ Performance
+## 📈 Performance
 
 - **Registration:** ~500ms (password hashing)
 - **Login:** ~400ms (password comparison)
@@ -385,7 +385,7 @@ maxAge: 24 * 60 * 60 * 1000  // Change to desired milliseconds
 
 ---
 
-## ðŸš€ Production Deployment Checklist
+## 🚀 Production Deployment Checklist
 
 Before deploying to production, ensure:
 
@@ -405,7 +405,7 @@ Before deploying to production, ensure:
 
 ---
 
-## ðŸ†˜ Error Mitigation & Troubleshooting Guide
+## 🆘 Error Mitigation & Troubleshooting Guide
 
 ### Real-Time Container Log Monitoring
 
@@ -527,7 +527,7 @@ kubectl apply -f k8s/ -n $NAMESPACE
 
 echo "Waiting for rollout to complete..."
 if kubectl rollout status deployment/$DEPLOYMENT -n $NAMESPACE --timeout=${TIMEOUT}s; then
-    echo "âœ… Deployment successful!"
+    echo "✅ Deployment successful!"
     
     # Run health check
     echo "Running health checks..."
@@ -536,16 +536,16 @@ if kubectl rollout status deployment/$DEPLOYMENT -n $NAMESPACE --timeout=${TIMEO
     HEALTHY_PODS=$(kubectl get pods -n $NAMESPACE -l component=backend -o json | jq '[.items[] | select(.status.phase=="Running" and .status.conditions[] | select(.type=="Ready" and .status=="True"))] | length')
     
     if [ "$HEALTHY_PODS" -ge 2 ]; then
-        echo "âœ… Health check passed! $HEALTHY_PODS pods are healthy"
+        echo "✅ Health check passed! $HEALTHY_PODS pods are healthy"
     else
-        echo "âŒ Health check failed! Only $HEALTHY_PODS pods are healthy"
-        echo "ðŸ”„ Rolling back..."
+        echo "❌ Health check failed! Only $HEALTHY_PODS pods are healthy"
+        echo "🔄 Rolling back..."
         kubectl rollout undo deployment/$DEPLOYMENT -n $NAMESPACE
         exit 1
     fi
 else
-    echo "âŒ Deployment failed or timed out!"
-    echo "ðŸ”„ Rolling back..."
+    echo "❌ Deployment failed or timed out!"
+    echo "🔄 Rolling back..."
     kubectl rollout undo deployment/$DEPLOYMENT -n $NAMESPACE
     exit 1
 fi
@@ -842,310 +842,170 @@ kubectl exec -n consearch <postgres-pod> -- pg_isready
 
 ---
 
-## ï¿½ Monitoring & Observability Laporan
+## � Laporan Monitoring & Observability
 
-### ðŸ“ˆ Dashboard Monitoring Overview
+### 1. Pendahuluan
 
-Platform CONSEARCH dilengkapi dengan sistem monitoring dan observability yang komprehensif menggunakan stack monitoring modern untuk memastikan performa, ketersediaan, dan kesehatan sistem.
+Pada pengembangan aplikasi CONSEARCH ini, saya mengimplementasikan sistem monitoring dan observability yang terintegrasi untuk memastikan aplikasi berjalan dengan optimal. Sistem monitoring ini sangat penting dalam lingkungan production karena memungkinkan saya untuk memantau kesehatan sistem secara real-time, mendeteksi anomali, dan merespons insiden dengan cepat.
+
+Dalam implementasi ini, saya menggunakan tiga komponen utama yaitu **Prometheus** sebagai metrics collector, **Grafana** sebagai visualization tool, dan **Alertmanager** sebagai sistem notifikasi. Ketiga komponen ini bekerja secara sinergis untuk memberikan visibilitas penuh terhadap performa aplikasi.
 
 ![Dashboard Overview](public/images/dashboard1.png)
 
-**Stack Monitoring:**
-- **Prometheus** - Metrics collection dan time-series database
-- **Grafana** - Visualization dan dashboard
-- **Alertmanager** - Alert routing dan notification management
-- **Node Exporter** - System metrics
-- **Custom Metrics** - Application-specific metrics
+*Gambar di atas menunjukkan tampilan dashboard utama sistem monitoring yang telah saya konfigurasi.*
 
 ---
 
-### ðŸ“Š Grafana Dashboard
+### 2. Implementasi Grafana Dashboard
 
-Grafana menyediakan visualisasi real-time untuk semua metrics yang dikumpulkan dari aplikasi dan infrastruktur.
+Grafana merupakan platform visualisasi yang saya gunakan untuk menampilkan metrics dalam bentuk grafik dan panel yang mudah dipahami. Saya memilih Grafana karena kemampuannya dalam membuat dashboard yang interaktif dan dapat dikustomisasi sesuai kebutuhan monitoring aplikasi CONSEARCH.
 
-**Key Metrics yang Dimonitor:**
+#### 2.1 Konfigurasi Dashboard
 
-#### 1. Application Performance Metrics
-- **Request Rate**: Jumlah request per second
-- **Response Time**: P50, P95, P99 latency
-- **Error Rate**: Persentase error 4xx dan 5xx
-- **Active Connections**: Jumlah koneksi aktif ke database
-- **Throughput**: Data transfer rate
+Dalam konfigurasi Grafana, saya membuat beberapa panel untuk memonitor aspek-aspek penting dari aplikasi:
 
-#### 2. Infrastructure Metrics
-- **CPU Usage**: Utilization per pod/container
-- **Memory Usage**: RAM consumption dan trends
-- **Network I/O**: Incoming/outgoing traffic
-- **Disk I/O**: Read/write operations
-- **Pod Status**: Running, pending, failed pods
+**Panel Performa Aplikasi:**
+- Request rate per detik untuk mengukur throughput aplikasi
+- Response time dengan percentile P50, P95, dan P99
+- Error rate untuk memantau persentase request yang gagal
+- Active connections ke database PostgreSQL
 
-#### 3. Business Metrics
-- **User Registrations**: New signups per hour/day
-- **Active Sessions**: Current logged-in users
-- **Booking Rate**: Tickets booked per minute
-- **Revenue Metrics**: Transaction volume and value
-- **Popular Events**: Most booked concerts
+**Panel Infrastruktur:**
+- Utilisasi CPU per container/pod
+- Konsumsi memory dan trend penggunaan
+- Network I/O untuk traffic masuk dan keluar
+- Status pod pada cluster Kubernetes
 
-**Dashboard Features:**
-- âœ… Real-time data updates (5s refresh)
-- âœ… Custom time ranges (Last 5m, 1h, 6h, 24h, 7d)
-- âœ… Multi-panel layout dengan berbagai visualization types
-- âœ… Drill-down capabilities untuk detailed analysis
-- âœ… Alert annotations pada graph
-- âœ… Variable templates untuk filtering
+**Panel Metrik Bisnis:**
+- Jumlah registrasi user baru
+- Sesi aktif pengguna
+- Tingkat pemesanan tiket konser
+- Event yang paling diminati
+
+#### 2.2 Hasil Monitoring Grafana
+
+Berikut adalah tampilan dashboard Grafana yang telah saya implementasikan:
 
 ![Grafana Dashboard](public/images/grafana1.png)
 
-**Grafana Dashboard Panels:**
-1. **System Overview** - CPU, Memory, Network summary
-2. **Request Performance** - Latency heatmaps dan histograms
-3. **Error Tracking** - Error rate dan error types
-4. **Database Performance** - Query time, connection pool
-5. **Pod Status** - Kubernetes pod health
-6. **Custom Application Metrics** - Booking rates, user activity
+Dari dashboard tersebut, dapat dilihat bahwa saya telah mengkonfigurasi beberapa panel penting meliputi System Overview untuk ringkasan CPU dan Memory, Request Performance untuk melihat latency, serta Error Tracking untuk memantau tingkat error pada aplikasi.
 
-**Access Grafana:**
-```bash
-# Local Development
-http://localhost:3001
-
-# Kubernetes
-kubectl port-forward -n consearch svc/grafana 3001:80
-
-# Default Credentials
-Username: admin
-Password: admin
-```
+Untuk mengakses Grafana pada environment development, dapat dilakukan melalui `http://localhost:3001` dengan kredensial default admin/admin.
 
 ---
 
-### ðŸš¨ Prometheus Alerts
+### 3. Konfigurasi Prometheus Alerts
 
-Prometheus mengumpulkan metrics dan mengevaluasi alert rules untuk mendeteksi masalah secara proaktif.
+Prometheus tidak hanya berfungsi sebagai metrics collector, tetapi juga memiliki kemampuan untuk mengevaluasi alert rules. Saya mengkonfigurasi berbagai alert rules untuk mendeteksi masalah secara proaktif sebelum berdampak pada pengguna.
 
-**Alert Rules yang Dikonfigurasi:**
+#### 3.1 Kategori Alert yang Dikonfigurasi
 
-#### Critical Alerts (P0)
-- **ServiceDown**: Service tidak merespon selama 2 menit
-- **HighErrorRate**: Error rate > 5% selama 5 menit
-- **DatabaseDown**: PostgreSQL tidak dapat diakses
-- **OutOfMemory**: Memory usage > 90% selama 5 menit
+Saya mengklasifikasikan alert ke dalam tiga tingkat prioritas:
 
-#### Warning Alerts (P1)
-- **HighCPUUsage**: CPU usage > 80% selama 10 menit
-- **HighLatency**: P95 response time > 500ms selama 5 menit
-- **LowDiskSpace**: Disk usage > 85%
-- **HighConnectionCount**: Database connections > 80% pool limit
+**Critical (Prioritas Tertinggi):**
+Alert ini membutuhkan penanganan segera karena berdampak langsung pada ketersediaan layanan.
+- ServiceDown: Terdeteksi ketika service tidak merespons selama 2 menit
+- HighErrorRate: Aktif ketika error rate melebihi 5% selama 5 menit
+- DatabaseDown: Triggered ketika PostgreSQL tidak dapat diakses
+- OutOfMemory: Muncul saat penggunaan memory melebihi 90%
 
-#### Info Alerts (P2)
-- **PodRestartHigh**: Pod restart > 5 kali dalam 1 jam
-- **SlowQueries**: Database query > 1s
-- **HighMemoryUsage**: Memory usage > 75%
-- **ScalingEvent**: HPA scaling triggered
+**Warning (Prioritas Menengah):**
+Alert ini mengindikasikan potensi masalah yang perlu diperhatikan.
+- HighCPUUsage: CPU usage melebihi 80% selama 10 menit
+- HighLatency: Response time P95 melebihi 500ms
+- LowDiskSpace: Penggunaan disk melebihi 85%
+
+**Info (Prioritas Rendah):**
+Alert ini bersifat informatif untuk awareness.
+- PodRestartHigh: Pod restart lebih dari 5 kali dalam 1 jam
+- ScalingEvent: HPA melakukan scaling otomatis
+
+#### 3.2 Hasil Konfigurasi Alert
+
+Berikut adalah tampilan halaman Alerts pada Prometheus yang menunjukkan status alert rules yang telah saya konfigurasi:
 
 ![Prometheus Alerts](public/images/prometheusalerts1.png)
 
-**Alert Status Indicators:**
-- ðŸ”´ **Firing**: Alert aktif, membutuhkan action immediate
-- ðŸŸ¡ **Pending**: Alert dalam evaluasi, akan firing jika kondisi berlanjut
-- ðŸŸ¢ **Resolved**: Alert telah resolved, sistem normal
-
-**Alert Routing:**
-- Email notifications untuk critical alerts
-- Slack integration untuk team notifications
-- PagerDuty untuk on-call escalation
-- Webhook untuk custom integrations
-
-**Alert Evaluation:**
-```yaml
-# Example Alert Rule
-alert: HighLatency
-expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
-for: 5m
-severity: warning
-annotations:
-  summary: "High latency detected on {{ $labels.instance }}"
-  description: "P95 latency is {{ $value }}s"
-```
+Pada gambar tersebut terlihat status masing-masing alert rule. Indikator warna menunjukkan kondisi alert: hijau berarti kondisi normal, kuning berarti alert dalam evaluasi, dan merah menandakan alert sedang aktif (firing).
 
 ---
 
-### ðŸŽ¯ Prometheus Targets
+### 4. Prometheus Targets Configuration
 
-Prometheus scrapes metrics dari berbagai targets/endpoints untuk monitoring komprehensif.
+Prometheus mengumpulkan metrics dengan cara melakukan scraping ke berbagai endpoint. Saya mengkonfigurasi beberapa targets untuk mendapatkan metrics yang komprehensif dari seluruh komponen sistem.
 
-**Monitored Targets:**
+#### 4.1 Daftar Targets yang Dikonfigurasi
 
-#### Application Targets
-- **Backend API** (consearch-backend:3000/metrics)
-  - Status: âœ… UP
-  - Scrape Interval: 15s
-  - Metrics: HTTP requests, response times, error rates
+**Application Targets:**
+- Backend API (`localhost:3000/metrics`): Mengekspos metrics HTTP requests, response times, dan error rates dengan interval scrape 15 detik
+- PostgreSQL Exporter (`postgres-exporter:9187/metrics`): Menyediakan metrics database seperti connection pool dan query performance
 
-- **PostgreSQL Exporter** (postgres-exporter:9187/metrics)
-  - Status: âœ… UP
-  - Scrape Interval: 30s
-  - Metrics: Database connections, query performance, cache hits
+**Infrastructure Targets:**
+- Node Exporter (`node-exporter:9100/metrics`): Mengumpulkan metrics sistem operasi seperti CPU, memory, disk, dan network
+- Kubernetes API: Memonitor status pod, deployment, dan resource usage pada cluster
 
-#### Infrastructure Targets
-- **Node Exporter** (node-exporter:9100/metrics)
-  - Status: âœ… UP
-  - Scrape Interval: 15s
-  - Metrics: CPU, memory, disk, network stats
+**Monitoring Stack Targets:**
+- Prometheus self-monitoring: Untuk memantau performa Prometheus itu sendiri
+- Grafana metrics: Memonitor penggunaan dashboard dan API calls
 
-- **Kubernetes API** (kubernetes.default.svc/metrics)
-  - Status: âœ… UP
-  - Scrape Interval: 30s
-  - Metrics: Pod status, deployment state, resource usage
+#### 4.2 Status Targets
 
-#### Monitoring Stack Targets
-- **Prometheus** (self-monitoring)
-  - Status: âœ… UP
-  - Scrape Interval: 15s
-  - Metrics: Query performance, storage, scrape duration
-
-- **Grafana** (grafana:3000/metrics)
-  - Status: âœ… UP
-  - Scrape Interval: 30s
-  - Metrics: Dashboard views, active users, API calls
+Berikut adalah tampilan halaman Targets pada Prometheus yang menunjukkan status koneksi ke masing-masing endpoint:
 
 ![Prometheus Targets](public/images/prometheustargets1.png)
 
-**Target Health Status:**
-- âœ… **UP**: Target healthy dan responding
-- âŒ **DOWN**: Target tidak dapat dijangkau
-- âš ï¸ **UNKNOWN**: Target status tidak dapat ditentukan
-
-**Target Configuration:**
-```yaml
-scrape_configs:
-  - job_name: 'consearch-backend'
-    scrape_interval: 15s
-    static_configs:
-      - targets: ['localhost:3000']
-    metrics_path: /metrics
-```
-
-**Troubleshooting Down Targets:**
-```bash
-# Check target connectivity
-curl http://target-host:port/metrics
-
-# Check Prometheus config
-kubectl exec -n consearch prometheus-pod -- promtool check config /etc/prometheus/prometheus.yml
-
-# View Prometheus logs
-kubectl logs -n consearch -l app=prometheus
-
-# Reload Prometheus config
-curl -X POST http://prometheus:9090/-/reload
-```
+Gambar di atas menampilkan status UP untuk semua targets yang dikonfigurasi, menandakan bahwa Prometheus berhasil melakukan scraping metrics dari seluruh endpoint. Jika terdapat target dengan status DOWN, hal tersebut mengindikasikan adanya masalah konektivitas yang perlu ditangani.
 
 ---
 
-### ðŸ”” Alertmanager Configuration
+### 5. Alertmanager Configuration
 
-Alertmanager mengelola alert routing, grouping, silencing, dan notification.
+Alertmanager bertugas mengelola alert yang dikirim oleh Prometheus. Saya mengkonfigurasi Alertmanager untuk melakukan grouping alert yang serupa, routing ke channel notifikasi yang tepat, dan mencegah alert spam melalui mekanisme silencing.
 
-**Alert Routing Strategy:**
+#### 5.1 Strategi Alert Routing
+
+Konfigurasi routing yang saya implementasikan:
 
 ```yaml
-# Alert Grouping
 group_by: ['alertname', 'cluster', 'service']
-group_wait: 10s        # Wait before sending initial notification
-group_interval: 10s    # Wait before sending batch of new alerts
-repeat_interval: 12h   # Resend alert if still firing
-
-# Notification Channels
-receivers:
-  - name: 'critical-team'
-    email_configs:
-      - to: 'oncall@consearch.com'
-    slack_configs:
-      - channel: '#alerts-critical'
-    pagerduty_configs:
-      - service_key: '<service-key>'
-
-  - name: 'warning-team'
-    slack_configs:
-      - channel: '#alerts-warning'
-    email_configs:
-      - to: 'team@consearch.com'
+group_wait: 10s
+group_interval: 10s
+repeat_interval: 12h
 ```
 
-**Alert Lifecycle:**
-1. **Detection**: Prometheus evaluates alert rules
-2. **Firing**: Alert condition met, sent to Alertmanager
-3. **Grouping**: Similar alerts grouped together
-4. **Routing**: Routed to appropriate receivers
-5. **Notification**: Sent via configured channels
-6. **Resolution**: Alert resolved when condition clears
+Dengan konfigurasi ini, alert yang serupa akan dikelompokkan terlebih dahulu selama 10 detik sebelum dikirim, sehingga mengurangi jumlah notifikasi yang diterima.
 
-**Silencing Alerts:**
-```bash
-# Silence alert via API
-curl -X POST http://alertmanager:9093/api/v1/silences \
-  -d '{
-    "matchers": [{"name":"alertname","value":"HighLatency"}],
-    "startsAt": "2026-01-21T10:00:00Z",
-    "endsAt": "2026-01-21T12:00:00Z",
-    "comment": "Planned maintenance"
-  }'
+#### 5.2 Channel Notifikasi
 
-# Silence via amtool
-amtool silence add alertname=HighLatency --duration=2h --comment="Maintenance"
-```
+Saya mengkonfigurasi beberapa channel notifikasi berdasarkan severity alert:
+- Alert critical dikirim melalui email dan Slack channel #alerts-critical
+- Alert warning dikirim ke Slack channel #alerts-warning
+- Webhook integration untuk custom automation
 
 ---
 
-### ðŸ“Š Custom Metrics Implementation
+### 6. Implementasi Custom Metrics
 
-Aplikasi CONSEARCH mengekspos custom metrics untuk monitoring bisnis dan performa.
+Selain metrics bawaan, saya juga mengimplementasikan custom metrics pada aplikasi CONSEARCH untuk memonitor aspek bisnis yang spesifik.
 
-**Metrics yang Diimplementasi:**
+#### 6.1 Jenis Metrics yang Diimplementasikan
 
-#### Counter Metrics
-```javascript
-// Total requests
-http_requests_total{method="GET", endpoint="/api/events", status="200"}
+**Counter Metrics:**
+Digunakan untuk menghitung jumlah event yang terus bertambah seperti total HTTP requests, total bookings, dan total registrasi user.
 
-// Total bookings
-bookings_total{event_id="1", status="success"}
+**Gauge Metrics:**
+Digunakan untuk nilai yang dapat naik turun seperti active sessions, stock tiket event, dan jumlah koneksi database aktif.
 
-// Total registrations
-user_registrations_total{status="success"}
-```
+**Histogram Metrics:**
+Digunakan untuk mengukur distribusi nilai seperti request duration dan database query duration.
 
-#### Gauge Metrics
-```javascript
-// Active sessions
-active_sessions{} 50
+#### 6.2 Implementasi pada Kode
 
-// Current stock
-event_stock{event_id="1", event_name="NEWJEANS LIVE"} 395
+Saya menggunakan library `prom-client` untuk mengekspos metrics pada endpoint `/metrics`:
 
-// Database connections
-db_connections_active{} 15
-db_connections_idle{} 35
-```
-
-#### Histogram Metrics
-```javascript
-// Request duration
-http_request_duration_seconds_bucket{le="0.1"} 850
-http_request_duration_seconds_bucket{le="0.5"} 920
-http_request_duration_seconds_bucket{le="1.0"} 950
-
-// Database query duration
-db_query_duration_seconds_bucket{le="0.05"} 1200
-db_query_duration_seconds_bucket{le="0.1"} 1280
-```
-
-**Implementation Example:**
 ```javascript
 const promClient = require('prom-client');
 
-// Create metrics
 const httpRequestDuration = new promClient.Histogram({
   name: 'http_request_duration_seconds',
   help: 'Duration of HTTP requests in seconds',
@@ -1153,21 +1013,6 @@ const httpRequestDuration = new promClient.Histogram({
   buckets: [0.1, 0.5, 1, 2, 5]
 });
 
-// Track metric
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () => {
-    const duration = (Date.now() - start) / 1000;
-    httpRequestDuration.observe({
-      method: req.method,
-      route: req.route?.path || 'unknown',
-      status_code: res.statusCode
-    }, duration);
-  });
-  next();
-});
-
-// Expose metrics endpoint
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', promClient.register.contentType);
   res.end(await promClient.register.metrics());
@@ -1176,132 +1021,37 @@ app.get('/metrics', async (req, res) => {
 
 ---
 
-### ðŸŽ¯ Monitoring Access & Setup
+### 7. Cara Menjalankan Monitoring Stack
 
-#### Quick Start Monitoring Stack
+Untuk menjalankan seluruh monitoring stack, dapat menggunakan Docker Compose:
 
 ```bash
-# Docker Compose (Development)
 docker-compose up -d
+```
 
-# Access Services
-Grafana:        http://localhost:3001
-Prometheus:     http://localhost:9090
-Alertmanager:   http://localhost:9093
-App Metrics:    http://localhost:3000/metrics
+Setelah berhasil dijalankan, akses masing-masing service melalui:
+- Grafana: `http://localhost:3001`
+- Prometheus: `http://localhost:9090`
+- Alertmanager: `http://localhost:9093`
+- Application Metrics: `http://localhost:3000/metrics`
 
-# Kubernetes (Production)
-kubectl apply -f k8s/
-
-# Port Forward Services
+Untuk environment Kubernetes, gunakan port-forward:
+```bash
 kubectl port-forward -n consearch svc/grafana 3001:80
 kubectl port-forward -n consearch svc/prometheus 9090:9090
-kubectl port-forward -n consearch svc/alertmanager 9093:9093
-```
-
-#### Pre-configured Dashboards
-
-**Grafana Dashboards yang Tersedia:**
-1. **CONSEARCH Monitoring** (ID: 1) - Main application dashboard
-2. **Node Exporter Full** (ID: 1860) - System metrics
-3. **Kubernetes Cluster** (ID: 7249) - K8s overview
-4. **PostgreSQL Database** (ID: 9628) - Database performance
-
-**Import Dashboard:**
-```bash
-# Via Grafana UI
-1. Go to Dashboard â†’ Import
-2. Enter Dashboard ID or upload JSON
-3. Select Prometheus datasource
-4. Click Import
-
-# Via API
-curl -X POST http://admin:admin@localhost:3001/api/dashboards/db \
-  -H "Content-Type: application/json" \
-  -d @grafana/provisioning/dashboards/files/consearch-monitoring.json
 ```
 
 ---
 
-### ðŸ“ˆ Monitoring Best Practices
+### 8. Kesimpulan
 
-#### 1. **Alert Fatigue Prevention**
-- Set appropriate thresholds
-- Use alert grouping
-- Implement alert silencing during maintenance
-- Regular review and tuning of alert rules
+Implementasi sistem monitoring pada aplikasi CONSEARCH telah berhasil dilakukan dengan mengintegrasikan Prometheus, Grafana, dan Alertmanager. Sistem ini memungkinkan pemantauan real-time terhadap performa aplikasi, deteksi dini terhadap anomali, dan respons cepat terhadap insiden melalui mekanisme alerting yang telah dikonfigurasi.
 
-#### 2. **Dashboard Organization**
-- Create role-specific dashboards (DevOps, Business, Developers)
-- Use consistent naming conventions
-- Implement dashboard folders
-- Add documentation panels
-
-#### 3. **Metrics Strategy**
-- Follow naming conventions (snake_case)
-- Use appropriate metric types
-- Add meaningful labels
-- Avoid high cardinality labels
-
-#### 4. **Data Retention**
-```yaml
-# Prometheus retention
---storage.tsdb.retention.time=15d
---storage.tsdb.retention.size=50GB
-
-# Grafana datasource config
-timeInterval: "15s"
-queryTimeout: "60s"
-```
-
-#### 5. **Performance Optimization**
-- Optimize PromQL queries
-- Use recording rules for expensive queries
-- Implement metric relabeling
-- Monitor Prometheus itself
+Dengan adanya monitoring stack ini, saya dapat memastikan bahwa aplikasi CONSEARCH berjalan dengan optimal dan dapat segera mengambil tindakan korektif apabila terjadi masalah pada sistem.
 
 ---
 
-### ðŸ” Troubleshooting Monitoring Stack
-
-#### Prometheus Not Scraping
-```bash
-# Check targets status
-curl http://localhost:9090/api/v1/targets
-
-# Verify configuration
-promtool check config prometheus.yml
-
-# Check service discovery
-curl http://localhost:9090/api/v1/targets/metadata
-```
-
-#### Grafana Dashboard Not Showing Data
-```bash
-# Test Prometheus datasource
-curl http://localhost:3001/api/datasources/proxy/1/api/v1/query?query=up
-
-# Check Prometheus connectivity
-kubectl exec -n consearch grafana-pod -- curl prometheus:9090/-/healthy
-
-# Verify time range and timezone settings
-```
-
-#### Alerts Not Firing
-```bash
-# Check alert rules
-curl http://localhost:9090/api/v1/rules
-
-# Verify Alertmanager connectivity
-curl http://localhost:9090/api/v1/alertmanagers
-
-# Check Alertmanager logs
-kubectl logs -n consearch -l app=alertmanager
-```
-
----
-
-## ï¿½ðŸ“š Documentation
+## �📚 Documentation
 
 - **[QUICKSTART.md](./QUICKSTART.md)** - Get started in 5 minutes
 - **[AUTH_DOCUMENTATION.md](./AUTH_DOCUMENTATION.md)** - Complete auth documentation
@@ -1311,7 +1061,7 @@ kubectl logs -n consearch -l app=alertmanager
 
 ---
 
-## ðŸ¤ Contributing
+## 🤝 Contributing
 
 Pull requests welcome! Please ensure:
 1. Code follows existing style
@@ -1321,7 +1071,7 @@ Pull requests welcome! Please ensure:
 
 ---
 
-## ðŸ“ž Support
+## 📞 Support
 
 For issues, questions, or suggestions:
 1. Check the documentation files
@@ -1332,13 +1082,13 @@ For issues, questions, or suggestions:
 
 ---
 
-## ðŸ“„ License
+## 📄 License
 
 ISC License - See package.json
 
 ---
 
-## ðŸŽ‰ Credits
+## 🎉 Credits
 
 **Built with modern web technologies and enterprise security standards**
 
@@ -1349,23 +1099,23 @@ ISC License - See package.json
 
 ---
 
-## ðŸŒŸ Features Roadmap
+## 🌟 Features Roadmap
 
-### âœ… Completed (v1.0)
+### ✅ Completed (v1.0)
 - Professional authentication system
 - Concert booking system
 - Event management
 - Responsive UI
 - Security features
 
-### ðŸ”œ Coming Soon (v2.0)
+### 🔜 Coming Soon (v2.0)
 - Google OAuth2 login
 - Email verification
 - Password reset
 - Profile picture upload
 - 2FA (Two-Factor Authentication)
 
-### ðŸŽ¯ Planned (v3.0)
+### 🎯 Planned (v3.0)
 - Payment integration (Stripe, GoPay)
 - Email notifications
 - Admin dashboard
@@ -1374,7 +1124,7 @@ ISC License - See package.json
 
 ---
 
-## ðŸ“Š Statistics
+## 📊 Statistics
 
 - **Lines of Code:** 1,093 (HTML) + 150+ (Backend)
 - **Security Features:** 8+
@@ -1388,12 +1138,12 @@ ISC License - See package.json
 
 <div align="center">
 
-### ðŸŽª CONSEARCH
+### 🎪 CONSEARCH
 **Professional Concert Booking Platform**
 
 *Bringing concerts and fans together*
 
-Built with â¤ï¸ for music lovers everywhere
+Built with ❤️ for music lovers everywhere
 
 [Start Booking](http://localhost:3000) | [Documentation](./AUTH_DOCUMENTATION.md) | [Quick Start](./QUICKSTART.md)
 
@@ -1403,7 +1153,6 @@ Built with â¤ï¸ for music lovers everywhere
 
 **Last Updated:** January 2026  
 **Version:** 1.0.0  
-**Status:** âœ… Production Ready  
+**Status:** ✅ Production Ready  
 
 *Made with modern best practices and enterprise security standards.*
-
