@@ -1,0 +1,265 @@
+{
+  "title": "Consearch Monitoring - 4 Metrik Utama",
+  "uid": "consearch-monitoring",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "📊 1. Request Latency (p95) - Response Time",
+      "type": "timeseries",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95 Response Time",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p99 Response Time",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
+            "fillOpacity": 25,
+            "showPoints": "auto",
+            "pointSize": 5
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 0.5, "color": "yellow"},
+              {"value": 1, "color": "red"}
+            ]
+          }
+        }
+      },
+      "options": {
+        "tooltip": {"mode": "single", "sort": "none"},
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}
+      },
+      "description": "⏱️ Metrik ini menunjukkan batas waktu respon maksimal yang dirasakan oleh 95% pengguna. Target: < 500ms"
+    },
+    {
+      "id": 2,
+      "title": "⚠️ 2. Error Rate (4xx/5xx) - Success Rate",
+      "type": "gauge",
+      "gridPos": {"x": 12, "y": 0, "w": 6, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "(sum(rate(http_requests_total{code=~\"4..|5..\"}[5m])) / sum(rate(http_requests_total[5m]))) * 100",
+          "legendFormat": "Error Rate %",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 1, "color": "yellow"},
+              {"value": 5, "color": "orange"},
+              {"value": 10, "color": "red"}
+            ]
+          }
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "orientation": "auto",
+        "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+        "text": {"titleSize": 18, "valueSize": 48}
+      },
+      "description": "🚨 Rasio kegagalan permintaan (4xx/5xx) vs total traffic. Target: < 1%"
+    },
+    {
+      "id": 3,
+      "title": "📈 HTTP Status Distribution",
+      "type": "stat",
+      "gridPos": {"x": 18, "y": 0, "w": 6, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"expr": "sum(rate(http_requests_total{code=\"200\"}[5m])) * 60", "legendFormat": "✅ 200 OK", "refId": "A"},
+        {"expr": "sum(rate(http_requests_total{code=~\"4..\"}[5m])) * 60", "legendFormat": "⚠️ 4xx Error", "refId": "B"},
+        {"expr": "sum(rate(http_requests_total{code=~\"5..\"}[5m])) * 60", "legendFormat": "❌ 5xx Error", "refId": "C"}
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqpm",
+          "color": {"mode": "thresholds"},
+          "thresholds": {"mode": "absolute", "steps": [{"value": null, "color": "text"}]}
+        },
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "✅ 200 OK"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]},
+          {"matcher": {"id": "byName", "options": "⚠️ 4xx Error"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}]},
+          {"matcher": {"id": "byName", "options": "❌ 5xx Error"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]}
+        ]
+      },
+      "options": {
+        "graphMode": "area",
+        "colorMode": "background",
+        "orientation": "vertical",
+        "textMode": "value_and_name",
+        "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""}
+      },
+      "description": "Distribusi status HTTP per menit"
+    },
+    {
+      "id": 4,
+      "title": "💻 3. Container CPU Usage - Backend Node.js",
+      "type": "timeseries",
+      "gridPos": {"x": 0, "y": 9, "w": 12, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"expr": "rate(container_cpu_usage_seconds_total{name=~\".*app.*\"}[5m]) * 100", "legendFormat": "Container CPU %", "refId": "A"},
+        {"expr": "rate(process_cpu_seconds_total{job=\"nodejs-app\"}[5m]) * 100", "legendFormat": "Node.js Process CPU %", "refId": "B"}
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
+            "fillOpacity": 40,
+            "gradientMode": "opacity",
+            "showPoints": "never"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 50, "color": "yellow"},
+              {"value": 80, "color": "red"}
+            ]
+          }
+        }
+      },
+      "options": {
+        "tooltip": {"mode": "multi", "sort": "none"},
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}
+      },
+      "description": "🖥️ Penggunaan CPU kontainer Node.js. Target: < 50%"
+    },
+    {
+      "id": 5,
+      "title": "🗄️ 4. Database Query Duration - PostgreSQL Latency",
+      "type": "timeseries",
+      "gridPos": {"x": 12, "y": 9, "w": 12, "h": 9},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"expr": "histogram_quantile(0.95, sum(rate(db_query_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95 Query", "refId": "A"},
+        {"expr": "histogram_quantile(0.50, sum(rate(db_query_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p50 Query (median)", "refId": "B"},
+        {"expr": "rate(db_query_duration_seconds_sum[5m]) / rate(db_query_duration_seconds_count[5m])", "legendFormat": "Average Query", "refId": "C"}
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
+            "fillOpacity": 15,
+            "showPoints": "auto",
+            "pointSize": 5
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 0.1, "color": "yellow"},
+              {"value": 0.5, "color": "red"}
+            ]
+          }
+        }
+      },
+      "options": {
+        "tooltip": {"mode": "multi", "sort": "none"},
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}
+      },
+      "description": "🗄️ Waktu eksekusi query PostgreSQL. Target: < 100ms"
+    },
+    {
+      "id": 6,
+      "title": "📊 Request Throughput",
+      "type": "timeseries",
+      "gridPos": {"x": 0, "y": 18, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(rate(http_requests_total[5m])) * 60", "legendFormat": "Requests/min", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqpm",
+          "color": {"mode": "palette-classic"},
+          "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 30}
+        }
+      },
+      "options": {"legend": {"displayMode": "list", "placement": "bottom"}},
+      "description": "Total request per menit"
+    },
+    {
+      "id": 7,
+      "title": "🔢 Database Connection Pool",
+      "type": "stat",
+      "gridPos": {"x": 12, "y": 18, "w": 12, "h": 7},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"expr": "db_pool_connections_active", "legendFormat": "🟢 Active", "refId": "A"},
+        {"expr": "db_pool_connections_idle", "legendFormat": "🟡 Idle", "refId": "B"},
+        {"expr": "db_pool_connections_total", "legendFormat": "📊 Total", "refId": "C"}
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": null, "color": "green"},
+              {"value": 8, "color": "yellow"},
+              {"value": 15, "color": "red"}
+            ]
+          }
+        }
+      },
+      "options": {
+        "graphMode": "area",
+        "colorMode": "background",
+        "orientation": "horizontal",
+        "textMode": "value_and_name"
+      },
+      "description": "Koneksi database pool"
+    }
+  ],
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "tags": ["monitoring", "performance", "nodejs"],
+  "templating": {"list": []}
+}

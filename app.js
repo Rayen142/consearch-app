@@ -58,9 +58,61 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/consearchdb'
 });
 
+// Database Query Duration Histogram
+const dbQueryDuration = new client.Histogram({
+    name: 'db_query_duration_seconds',
+    help: 'Duration of database queries in seconds',
+    labelNames: ['operation'],
+    buckets: [0.01, 0.05, 0.1, 0.5, 1]
+});
+register.registerMetric(dbQueryDuration);
+
+// Database Connection Pool Gauges
+const dbPoolConnectionsActive = new client.Gauge({
+    name: 'db_pool_connections_active',
+    help: 'Number of active database connections in the pool'
+});
+register.registerMetric(dbPoolConnectionsActive);
+
+const dbPoolConnectionsIdle = new client.Gauge({
+    name: 'db_pool_connections_idle',
+    help: 'Number of idle database connections in the pool'
+});
+register.registerMetric(dbPoolConnectionsIdle);
+
+const dbPoolConnectionsTotal = new client.Gauge({
+    name: 'db_pool_connections_total',
+    help: 'Total number of database connections in the pool'
+});
+register.registerMetric(dbPoolConnectionsTotal);
+
+// Update pool metrics periodically
+setInterval(() => {
+    if (pool) {
+        const total = pool.totalCount || 0;
+        const idle = pool.idleCount || 0;
+        dbPoolConnectionsTotal.set(total);
+        dbPoolConnectionsIdle.set(idle);
+        dbPoolConnectionsActive.set(total - idle);
+    }
+}, 5000);
+
 // In-memory fallback storage for demo mode
 let usersDB = [];
 let dbAvailable = false;
+
+// Wrapper function to track database query duration
+const trackedQuery = async (queryText, params = [], operation = 'query') => {
+    const end = dbQueryDuration.startTimer({ operation });
+    try {
+        const result = await pool.query(queryText, params);
+        end();
+        return result;
+    } catch (error) {
+        end();
+        throw error;
+    }
+};
 
 // Initialize users table
 const initDB = async () => {
@@ -125,7 +177,7 @@ app.post('/api/auth/register', async (req, res) => {
         let userExists = false;
         
         if (dbAvailable) {
-            const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+            const result = await trackedQuery('SELECT * FROM users WHERE email = $1', [email], 'select');
             userExists = result.rows.length > 0;
         } else {
             userExists = usersDB.some(u => u.email === email);
@@ -140,9 +192,10 @@ app.post('/api/auth/register', async (req, res) => {
         
         let user;
         if (dbAvailable) {
-            const result = await pool.query(
+            const result = await trackedQuery(
                 'INSERT INTO users (email, password_hash, full_name) VALUES ($1, $2, $3) RETURNING id, email, full_name',
-                [email, password_hash, full_name]
+                [email, password_hash, full_name],
+                'insert'
             );
             user = result.rows[0];
         } else {
@@ -180,7 +233,7 @@ app.post('/api/auth/login', async (req, res) => {
         let user = null;
         
         if (dbAvailable) {
-            const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+            const result = await trackedQuery('SELECT * FROM users WHERE email = $1', [email], 'select');
             if (result.rows.length === 0) {
                 return res.status(401).json({ error: 'Invalid email or password' });
             }
@@ -223,7 +276,7 @@ app.get('/api/auth/me', verifyToken, async (req, res) => {
         let user = null;
         
         if (dbAvailable) {
-            const result = await pool.query('SELECT id, email, full_name, profile_picture, created_at FROM users WHERE id = $1', [req.user.id]);
+            const result = await trackedQuery('SELECT id, email, full_name, profile_picture, created_at FROM users WHERE id = $1', [req.user.id], 'select');
             if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
             user = result.rows[0];
         } else {
@@ -245,9 +298,10 @@ app.put('/api/auth/profile', verifyToken, async (req, res) => {
         let user;
         
         if (dbAvailable) {
-            const result = await pool.query(
+            const result = await trackedQuery(
                 'UPDATE users SET full_name = $1, profile_picture = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING id, email, full_name, profile_picture',
-                [full_name, profile_picture, req.user.id]
+                [full_name, profile_picture, req.user.id],
+                'update'
             );
             user = result.rows[0];
         } else {
@@ -272,7 +326,7 @@ app.get('/metrics', async (req, res) => {
 
 app.get('/api/events', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM events ORDER BY id ASC');
+        const result = await trackedQuery('SELECT * FROM events ORDER BY id ASC', [], 'select');
         res.json(result.rows);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -280,9 +334,10 @@ app.get('/api/events', async (req, res) => {
 app.post('/api/book/:id', verifyToken, async (req, res) => {
     const eventId = req.params.id;
     try {
-        const result = await pool.query(
+        const result = await trackedQuery(
             'UPDATE events SET stock = stock - 1 WHERE id = $1 AND stock > 0 RETURNING *',
-            [eventId]
+            [eventId],
+            'update'
         );
         if (result.rows.length === 0) return res.status(400).json({ message: "Sold Out!" });
         ticketSoldCounter.inc();

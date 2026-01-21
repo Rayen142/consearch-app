@@ -156,14 +156,14 @@ groups:
     rules:
       # Alert ketika tidak ada tiket terjual dalam periode tertentu
       - alert: NoTicketSales
-        expr: rate(tickets_sold_total[10m]) == 0
-        for: 10m
+        expr: increase(tickets_sold_total[5m]) == 0 and tickets_sold_total > 0
+        for: 1m
         labels:
           severity: warning
           service: backend
           alert_type: business
         annotations:
-          summary: "No ticket sales in the last 10 minutes"
+          summary: "No ticket sales in the last 5 minutes"
           description: "There have been no ticket purchases. This might indicate a problem with the purchase flow."
 
       # Alert ketika ticket sales spike (unusual activity)
