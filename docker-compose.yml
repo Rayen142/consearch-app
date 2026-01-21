@@ -20,11 +20,45 @@ services:
 
   prometheus:
     image: prom/prometheus
-    volumes: ["./prometheus.yml:/etc/prometheus/prometheus.yml"]
+    volumes: 
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert.rules.yml:/etc/prometheus/alert.rules.yml
     ports: ["9090:9090"]
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
 
   grafana:
     image: grafana/grafana
     ports: ["3001:3000"]
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+
+  # cAdvisor untuk monitoring metrik kontainer (CPU, Memory, Network)
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: consearch-cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+
+  # Postgres Exporter untuk monitoring metrik database PostgreSQL
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: consearch-postgres-exporter
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://user:password@db:5432/consearchdb?sslmode=disable"
+    depends_on:
+      - db

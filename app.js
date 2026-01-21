@@ -40,6 +40,13 @@ const httpRequestDuration = new client.Histogram({
 });
 register.registerMetric(httpRequestDuration);
 
+const httpRequestsTotal = new client.Counter({
+    name: 'http_requests_total',
+    help: 'Total HTTP requests',
+    labelNames: ['method', 'route', 'code']
+});
+register.registerMetric(httpRequestsTotal);
+
 const ticketSoldCounter = new client.Counter({
     name: 'tickets_sold_total',
     help: 'Total tickets sold'
@@ -84,7 +91,11 @@ setTimeout(() => initDB(), 1000);
 
 app.use((req, res, next) => {
     const end = httpRequestDuration.startTimer();
-    res.on('finish', () => end({ method: req.method, route: req.path, code: res.statusCode }));
+    res.on('finish', () => {
+        const labels = { method: req.method, route: req.path, code: res.statusCode };
+        end(labels);
+        httpRequestsTotal.inc(labels);
+    });
     next();
 });
 

@@ -168,7 +168,7 @@ groups:
 
       # Alert ketika ticket sales spike (unusual activity)
       - alert: UnusualTicketSalesSpike
-        expr: rate(tickets_sold_total[1m]) > avg_over_time(rate(tickets_sold_total[1m])[1h]) * 5
+        expr: rate(tickets_sold_total[1m]) > 5 * avg_over_time(rate(tickets_sold_total[5m])[1h:5m])
         for: 2m
         labels:
           severity: info
