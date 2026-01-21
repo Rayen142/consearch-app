@@ -1,17 +1,17 @@
-# 🎪 CONSEARCH - Professional Concert Booking Platform
+﻿# ðŸŽª CONSEARCH - Professional Concert Booking Platform
 
 > A modern, secure, enterprise-grade concert booking application with professional authentication system
 
-## 🌟 Features
+## ðŸŒŸ Features
 
-### 🎫 Concert Management
-- 🎵 **9 Major Concerts** - International artists (NewJeans, Blackpink, Seventeen, etc.)
-- 🎭 **18 Local Events** - Indonesian UMKM events and local artists
-- 💰 **Multiple Pricing Tiers** - VIP, Premium, Regular seating options
-- 🖼️ **Custom Images** - Each concert has beautiful custom imagery
-- 📅 **Event Calendar** - Browse and discover upcoming events
+### ðŸŽ« Concert Management
+- ðŸŽµ **9 Major Concerts** - International artists (NewJeans, Blackpink, Seventeen, etc.)
+- ðŸŽ­ **18 Local Events** - Indonesian UMKM events and local artists
+- ðŸ’° **Multiple Pricing Tiers** - VIP, Premium, Regular seating options
+- ðŸ–¼ï¸ **Custom Images** - Each concert has beautiful custom imagery
+- ðŸ“… **Event Calendar** - Browse and discover upcoming events
 
-### 🔐 Professional Authentication
+### ðŸ” Professional Authentication
 - **User Registration** - Email-based account creation with validation
 - **Secure Login** - Encrypted password authentication with JWT
 - **Session Management** - 24-hour token expiration, auto-refresh
@@ -19,14 +19,14 @@
 - **User Profiles** - View and edit personal information
 - **Password Strength Indicator** - Real-time feedback during registration
 
-### 🎨 Beautiful UI/UX
+### ðŸŽ¨ Beautiful UI/UX
 - **Glassmorphism Design** - Modern blur effects and transparency
 - **Responsive Layout** - Mobile, tablet, and desktop optimized
 - **Smooth Animations** - Cubic-bezier transitions and effects
 - **Dark Theme** - Easy on the eyes, modern aesthetic
 - **Bilingual Support** - English and Indonesian interface
 
-### 💾 Data Management
+### ðŸ’¾ Data Management
 - **Event Database** - Complete concert and event information
 - **Booking History** - Track all purchased tickets
 - **PostgreSQL Ready** - Production-grade database support
@@ -34,7 +34,7 @@
 
 ---
 
-## 🚀 Quick Start
+## ðŸš€ Quick Start
 
 ### Prerequisites
 - Node.js (v14+)
@@ -67,11 +67,11 @@ npm start
 
 ---
 
-## 📖 Usage Guide
+## ðŸ“– Usage Guide
 
 ### For End Users
 
-#### 1️⃣ Create Account
+#### 1ï¸âƒ£ Create Account
 ```
 1. Click "Create Account" in the user menu
 2. Enter your full name, email, and password
@@ -80,7 +80,7 @@ npm start
 5. You're instantly logged in!
 ```
 
-#### 2️⃣ Sign In
+#### 2ï¸âƒ£ Sign In
 ```
 1. Click "Sign In" in the user menu
 2. Enter your email and password
@@ -88,7 +88,7 @@ npm start
 4. Welcome back!
 ```
 
-#### 3️⃣ Book a Concert
+#### 3ï¸âƒ£ Book a Concert
 ```
 1. Click on any concert card
 2. Review event details
@@ -98,7 +98,7 @@ npm start
 6. Check "My Tickets" for confirmation
 ```
 
-#### 4️⃣ Sign Out
+#### 4ï¸âƒ£ Sign Out
 ```
 1. Click your profile icon (top right)
 2. Click "Sign Out"
@@ -107,66 +107,66 @@ npm start
 
 ---
 
-## 🏗️ Architecture
+## ðŸ—ï¸ Architecture
 
 ### Frontend Structure
 ```
 public/
-├── index.html              # Main application (1093 lines)
-├── login.html              # Login page
-├── register.html           # Registration page
-└── images/                 # Concert images
-    ├── fanmeet1.jpg
-    ├── fanmeet2.jpeg
-    ├── konser1-7.jpeg
-    └── ...
+â”œâ”€â”€ index.html              # Main application (1093 lines)
+â”œâ”€â”€ login.html              # Login page
+â”œâ”€â”€ register.html           # Registration page
+â””â”€â”€ images/                 # Concert images
+    â”œâ”€â”€ fanmeet1.jpg
+    â”œâ”€â”€ fanmeet2.jpeg
+    â”œâ”€â”€ konser1-7.jpeg
+    â””â”€â”€ ...
 ```
 
 ### Backend Structure
 ```
 app.js                       # Express server with auth APIs
-├── Authentication Endpoints (5 routes)
-├── Concert APIs (2 routes)
-├── Metrics Endpoint (1 route)
-└── Middleware (JWT verification, CORS, session)
+â”œâ”€â”€ Authentication Endpoints (5 routes)
+â”œâ”€â”€ Concert APIs (2 routes)
+â”œâ”€â”€ Metrics Endpoint (1 route)
+â””â”€â”€ Middleware (JWT verification, CORS, session)
 ```
 
 ### Database Schema
 ```sql
 users
-├── id (Primary Key)
-├── email (Unique)
-├── password_hash
-├── full_name
-├── profile_picture
-├── created_at
-└── updated_at
+â”œâ”€â”€ id (Primary Key)
+â”œâ”€â”€ email (Unique)
+â”œâ”€â”€ password_hash
+â”œâ”€â”€ full_name
+â”œâ”€â”€ profile_picture
+â”œâ”€â”€ created_at
+â””â”€â”€ updated_at
 ```
 
 ---
 
-## 🔐 Security Features
+## ðŸ” Security Features
 
 ### Password Protection
-- ✅ **bcryptjs** - Industry-standard password hashing
-- ✅ **10 Salt Rounds** - Cryptographically secure
-- ✅ **Comparison Delay** - Prevents timing attacks
+- âœ… **bcryptjs** - Industry-standard password hashing
+- âœ… **10 Salt Rounds** - Cryptographically secure
+- âœ… **Comparison Delay** - Prevents timing attacks
 
 ### Token Security
-- ✅ **JWT Tokens** - Stateless, signed authentication
-- ✅ **24-Hour Expiry** - Automatic token invalidation
-- ✅ **Cryptographic Signing** - Token tampering detection
-- ✅ **HttpOnly Cookies** - Protection against XSS
+- âœ… **JWT Tokens** - Stateless, signed authentication
+- âœ… **24-Hour Expiry** - Automatic token invalidation
+- âœ… **Cryptographic Signing** - Token tampering detection
+- âœ… **HttpOnly Cookies** - Protection against XSS
 
 ### API Security
-- ✅ **CORS Protection** - Cross-origin request validation
-- ✅ **Token Middleware** - Automatic route protection
-- ✅ **Input Validation** - Frontend and backend validation
-- ✅ **Error Masking** - Generic error messages
+- âœ… **CORS Protection** - Cross-origin request validation
+- âœ… **Token Middleware** - Automatic route protection
+- âœ… **Input Validation** - Frontend and backend validation
+- âœ… **Error Masking** - Generic error messages
 
 ---
 
-## 📚 API Endpoints
+## ðŸ“š API Endpoints
 
 ### Authentication APIs
 
@@ -284,7 +284,7 @@ Response:
 
 ---
 
-## 📊 Technical Stack
+## ðŸ“Š Technical Stack
 
 | Layer | Technology | Version | Purpose |
 |-------|-----------|---------|---------|
@@ -298,7 +298,7 @@ Response:
 
 ---
 
-## 🎯 Core Events Data
+## ðŸŽ¯ Core Events Data
 
 ### Major Concerts (9 Events)
 1. **CAN THIS LOVE BE TRANSLATED?** - The Kasablanka Hall - GRATIS
@@ -316,7 +316,7 @@ Jazz Fusion, Indie Acoustic, Electronic Beats, Hip Hop Battle, Reggae Vibes, Roc
 
 ---
 
-## ⚙️ Configuration
+## âš™ï¸ Configuration
 
 ### Environment Variables (.env)
 ```env
@@ -359,7 +359,7 @@ maxAge: 24 * 60 * 60 * 1000  // Change to desired milliseconds
 
 ---
 
-## 🐛 Troubleshooting
+## ðŸ› Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
@@ -374,7 +374,7 @@ maxAge: 24 * 60 * 60 * 1000  // Change to desired milliseconds
 
 ---
 
-## 📈 Performance
+## ðŸ“ˆ Performance
 
 - **Registration:** ~500ms (password hashing)
 - **Login:** ~400ms (password comparison)
@@ -385,7 +385,7 @@ maxAge: 24 * 60 * 60 * 1000  // Change to desired milliseconds
 
 ---
 
-## 🚀 Production Deployment Checklist
+## ðŸš€ Production Deployment Checklist
 
 Before deploying to production, ensure:
 
@@ -405,7 +405,7 @@ Before deploying to production, ensure:
 
 ---
 
-## 🆘 Error Mitigation & Troubleshooting Guide
+## ðŸ†˜ Error Mitigation & Troubleshooting Guide
 
 ### Real-Time Container Log Monitoring
 
@@ -527,7 +527,7 @@ kubectl apply -f k8s/ -n $NAMESPACE
 
 echo "Waiting for rollout to complete..."
 if kubectl rollout status deployment/$DEPLOYMENT -n $NAMESPACE --timeout=${TIMEOUT}s; then
-    echo "✅ Deployment successful!"
+    echo "âœ… Deployment successful!"
     
     # Run health check
     echo "Running health checks..."
@@ -536,16 +536,16 @@ if kubectl rollout status deployment/$DEPLOYMENT -n $NAMESPACE --timeout=${TIMEO
     HEALTHY_PODS=$(kubectl get pods -n $NAMESPACE -l component=backend -o json | jq '[.items[] | select(.status.phase=="Running" and .status.conditions[] | select(.type=="Ready" and .status=="True"))] | length')
     
     if [ "$HEALTHY_PODS" -ge 2 ]; then
-        echo "✅ Health check passed! $HEALTHY_PODS pods are healthy"
+        echo "âœ… Health check passed! $HEALTHY_PODS pods are healthy"
     else
-        echo "❌ Health check failed! Only $HEALTHY_PODS pods are healthy"
-        echo "🔄 Rolling back..."
+        echo "âŒ Health check failed! Only $HEALTHY_PODS pods are healthy"
+        echo "ðŸ”„ Rolling back..."
         kubectl rollout undo deployment/$DEPLOYMENT -n $NAMESPACE
         exit 1
     fi
 else
-    echo "❌ Deployment failed or timed out!"
-    echo "🔄 Rolling back..."
+    echo "âŒ Deployment failed or timed out!"
+    echo "ðŸ”„ Rolling back..."
     kubectl rollout undo deployment/$DEPLOYMENT -n $NAMESPACE
     exit 1
 fi
@@ -842,9 +842,9 @@ kubectl exec -n consearch <postgres-pod> -- pg_isready
 
 ---
 
-## � Monitoring & Observability Laporan
+## ï¿½ Monitoring & Observability Laporan
 
-### 📈 Dashboard Monitoring Overview
+### ðŸ“ˆ Dashboard Monitoring Overview
 
 Platform CONSEARCH dilengkapi dengan sistem monitoring dan observability yang komprehensif menggunakan stack monitoring modern untuk memastikan performa, ketersediaan, dan kesehatan sistem.
 
@@ -859,7 +859,7 @@ Platform CONSEARCH dilengkapi dengan sistem monitoring dan observability yang ko
 
 ---
 
-### 📊 Grafana Dashboard
+### ðŸ“Š Grafana Dashboard
 
 Grafana menyediakan visualisasi real-time untuk semua metrics yang dikumpulkan dari aplikasi dan infrastruktur.
 
@@ -887,12 +887,12 @@ Grafana menyediakan visualisasi real-time untuk semua metrics yang dikumpulkan d
 - **Popular Events**: Most booked concerts
 
 **Dashboard Features:**
-- ✅ Real-time data updates (5s refresh)
-- ✅ Custom time ranges (Last 5m, 1h, 6h, 24h, 7d)
-- ✅ Multi-panel layout dengan berbagai visualization types
-- ✅ Drill-down capabilities untuk detailed analysis
-- ✅ Alert annotations pada graph
-- ✅ Variable templates untuk filtering
+- âœ… Real-time data updates (5s refresh)
+- âœ… Custom time ranges (Last 5m, 1h, 6h, 24h, 7d)
+- âœ… Multi-panel layout dengan berbagai visualization types
+- âœ… Drill-down capabilities untuk detailed analysis
+- âœ… Alert annotations pada graph
+- âœ… Variable templates untuk filtering
 
 ![Grafana Dashboard](public/images/grafana1.png)
 
@@ -919,7 +919,7 @@ Password: admin
 
 ---
 
-### 🚨 Prometheus Alerts
+### ðŸš¨ Prometheus Alerts
 
 Prometheus mengumpulkan metrics dan mengevaluasi alert rules untuk mendeteksi masalah secara proaktif.
 
@@ -946,9 +946,9 @@ Prometheus mengumpulkan metrics dan mengevaluasi alert rules untuk mendeteksi ma
 ![Prometheus Alerts](public/images/prometheusalerts1.png)
 
 **Alert Status Indicators:**
-- 🔴 **Firing**: Alert aktif, membutuhkan action immediate
-- 🟡 **Pending**: Alert dalam evaluasi, akan firing jika kondisi berlanjut
-- 🟢 **Resolved**: Alert telah resolved, sistem normal
+- ðŸ”´ **Firing**: Alert aktif, membutuhkan action immediate
+- ðŸŸ¡ **Pending**: Alert dalam evaluasi, akan firing jika kondisi berlanjut
+- ðŸŸ¢ **Resolved**: Alert telah resolved, sistem normal
 
 **Alert Routing:**
 - Email notifications untuk critical alerts
@@ -970,7 +970,7 @@ annotations:
 
 ---
 
-### 🎯 Prometheus Targets
+### ðŸŽ¯ Prometheus Targets
 
 Prometheus scrapes metrics dari berbagai targets/endpoints untuk monitoring komprehensif.
 
@@ -978,43 +978,43 @@ Prometheus scrapes metrics dari berbagai targets/endpoints untuk monitoring komp
 
 #### Application Targets
 - **Backend API** (consearch-backend:3000/metrics)
-  - Status: ✅ UP
+  - Status: âœ… UP
   - Scrape Interval: 15s
   - Metrics: HTTP requests, response times, error rates
 
 - **PostgreSQL Exporter** (postgres-exporter:9187/metrics)
-  - Status: ✅ UP
+  - Status: âœ… UP
   - Scrape Interval: 30s
   - Metrics: Database connections, query performance, cache hits
 
 #### Infrastructure Targets
 - **Node Exporter** (node-exporter:9100/metrics)
-  - Status: ✅ UP
+  - Status: âœ… UP
   - Scrape Interval: 15s
   - Metrics: CPU, memory, disk, network stats
 
 - **Kubernetes API** (kubernetes.default.svc/metrics)
-  - Status: ✅ UP
+  - Status: âœ… UP
   - Scrape Interval: 30s
   - Metrics: Pod status, deployment state, resource usage
 
 #### Monitoring Stack Targets
 - **Prometheus** (self-monitoring)
-  - Status: ✅ UP
+  - Status: âœ… UP
   - Scrape Interval: 15s
   - Metrics: Query performance, storage, scrape duration
 
 - **Grafana** (grafana:3000/metrics)
-  - Status: ✅ UP
+  - Status: âœ… UP
   - Scrape Interval: 30s
   - Metrics: Dashboard views, active users, API calls
 
 ![Prometheus Targets](public/images/prometheustargets1.png)
 
 **Target Health Status:**
-- ✅ **UP**: Target healthy dan responding
-- ❌ **DOWN**: Target tidak dapat dijangkau
-- ⚠️ **UNKNOWN**: Target status tidak dapat ditentukan
+- âœ… **UP**: Target healthy dan responding
+- âŒ **DOWN**: Target tidak dapat dijangkau
+- âš ï¸ **UNKNOWN**: Target status tidak dapat ditentukan
 
 **Target Configuration:**
 ```yaml
@@ -1043,7 +1043,7 @@ curl -X POST http://prometheus:9090/-/reload
 
 ---
 
-### 🔔 Alertmanager Configuration
+### ðŸ”” Alertmanager Configuration
 
 Alertmanager mengelola alert routing, grouping, silencing, dan notification.
 
@@ -1098,7 +1098,7 @@ amtool silence add alertname=HighLatency --duration=2h --comment="Maintenance"
 
 ---
 
-### 📊 Custom Metrics Implementation
+### ðŸ“Š Custom Metrics Implementation
 
 Aplikasi CONSEARCH mengekspos custom metrics untuk monitoring bisnis dan performa.
 
@@ -1176,7 +1176,7 @@ app.get('/metrics', async (req, res) => {
 
 ---
 
-### 🎯 Monitoring Access & Setup
+### ðŸŽ¯ Monitoring Access & Setup
 
 #### Quick Start Monitoring Stack
 
@@ -1210,7 +1210,7 @@ kubectl port-forward -n consearch svc/alertmanager 9093:9093
 **Import Dashboard:**
 ```bash
 # Via Grafana UI
-1. Go to Dashboard → Import
+1. Go to Dashboard â†’ Import
 2. Enter Dashboard ID or upload JSON
 3. Select Prometheus datasource
 4. Click Import
@@ -1223,7 +1223,7 @@ curl -X POST http://admin:admin@localhost:3001/api/dashboards/db \
 
 ---
 
-### 📈 Monitoring Best Practices
+### ðŸ“ˆ Monitoring Best Practices
 
 #### 1. **Alert Fatigue Prevention**
 - Set appropriate thresholds
@@ -1262,7 +1262,7 @@ queryTimeout: "60s"
 
 ---
 
-### 🔍 Troubleshooting Monitoring Stack
+### ðŸ” Troubleshooting Monitoring Stack
 
 #### Prometheus Not Scraping
 ```bash
@@ -1301,7 +1301,7 @@ kubectl logs -n consearch -l app=alertmanager
 
 ---
 
-## �📚 Documentation
+## ï¿½ðŸ“š Documentation
 
 - **[QUICKSTART.md](./QUICKSTART.md)** - Get started in 5 minutes
 - **[AUTH_DOCUMENTATION.md](./AUTH_DOCUMENTATION.md)** - Complete auth documentation
@@ -1311,7 +1311,7 @@ kubectl logs -n consearch -l app=alertmanager
 
 ---
 
-## 🤝 Contributing
+## ðŸ¤ Contributing
 
 Pull requests welcome! Please ensure:
 1. Code follows existing style
@@ -1321,7 +1321,7 @@ Pull requests welcome! Please ensure:
 
 ---
 
-## 📞 Support
+## ðŸ“ž Support
 
 For issues, questions, or suggestions:
 1. Check the documentation files
@@ -1332,13 +1332,13 @@ For issues, questions, or suggestions:
 
 ---
 
-## 📄 License
+## ðŸ“„ License
 
 ISC License - See package.json
 
 ---
 
-## 🎉 Credits
+## ðŸŽ‰ Credits
 
 **Built with modern web technologies and enterprise security standards**
 
@@ -1349,23 +1349,23 @@ ISC License - See package.json
 
 ---
 
-## 🌟 Features Roadmap
+## ðŸŒŸ Features Roadmap
 
-### ✅ Completed (v1.0)
+### âœ… Completed (v1.0)
 - Professional authentication system
 - Concert booking system
 - Event management
 - Responsive UI
 - Security features
 
-### 🔜 Coming Soon (v2.0)
+### ðŸ”œ Coming Soon (v2.0)
 - Google OAuth2 login
 - Email verification
 - Password reset
 - Profile picture upload
 - 2FA (Two-Factor Authentication)
 
-### 🎯 Planned (v3.0)
+### ðŸŽ¯ Planned (v3.0)
 - Payment integration (Stripe, GoPay)
 - Email notifications
 - Admin dashboard
@@ -1374,7 +1374,7 @@ ISC License - See package.json
 
 ---
 
-## 📊 Statistics
+## ðŸ“Š Statistics
 
 - **Lines of Code:** 1,093 (HTML) + 150+ (Backend)
 - **Security Features:** 8+
@@ -1388,12 +1388,12 @@ ISC License - See package.json
 
 <div align="center">
 
-### 🎪 CONSEARCH
+### ðŸŽª CONSEARCH
 **Professional Concert Booking Platform**
 
 *Bringing concerts and fans together*
 
-Built with ❤️ for music lovers everywhere
+Built with â¤ï¸ for music lovers everywhere
 
 [Start Booking](http://localhost:3000) | [Documentation](./AUTH_DOCUMENTATION.md) | [Quick Start](./QUICKSTART.md)
 
@@ -1403,6 +1403,7 @@ Built with ❤️ for music lovers everywhere
 
 **Last Updated:** January 2026  
 **Version:** 1.0.0  
-**Status:** ✅ Production Ready  
+**Status:** âœ… Production Ready  
 
 *Made with modern best practices and enterprise security standards.*
+
