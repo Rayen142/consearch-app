@@ -842,7 +842,466 @@ kubectl exec -n consearch <postgres-pod> -- pg_isready
 
 ---
 
-## 📚 Documentation
+## � Monitoring & Observability Laporan
+
+### 📈 Dashboard Monitoring Overview
+
+Platform CONSEARCH dilengkapi dengan sistem monitoring dan observability yang komprehensif menggunakan stack monitoring modern untuk memastikan performa, ketersediaan, dan kesehatan sistem.
+
+![Dashboard Overview](public/images/dashboard1.png)
+
+**Stack Monitoring:**
+- **Prometheus** - Metrics collection dan time-series database
+- **Grafana** - Visualization dan dashboard
+- **Alertmanager** - Alert routing dan notification management
+- **Node Exporter** - System metrics
+- **Custom Metrics** - Application-specific metrics
+
+---
+
+### 📊 Grafana Dashboard
+
+Grafana menyediakan visualisasi real-time untuk semua metrics yang dikumpulkan dari aplikasi dan infrastruktur.
+
+**Key Metrics yang Dimonitor:**
+
+#### 1. Application Performance Metrics
+- **Request Rate**: Jumlah request per second
+- **Response Time**: P50, P95, P99 latency
+- **Error Rate**: Persentase error 4xx dan 5xx
+- **Active Connections**: Jumlah koneksi aktif ke database
+- **Throughput**: Data transfer rate
+
+#### 2. Infrastructure Metrics
+- **CPU Usage**: Utilization per pod/container
+- **Memory Usage**: RAM consumption dan trends
+- **Network I/O**: Incoming/outgoing traffic
+- **Disk I/O**: Read/write operations
+- **Pod Status**: Running, pending, failed pods
+
+#### 3. Business Metrics
+- **User Registrations**: New signups per hour/day
+- **Active Sessions**: Current logged-in users
+- **Booking Rate**: Tickets booked per minute
+- **Revenue Metrics**: Transaction volume and value
+- **Popular Events**: Most booked concerts
+
+**Dashboard Features:**
+- ✅ Real-time data updates (5s refresh)
+- ✅ Custom time ranges (Last 5m, 1h, 6h, 24h, 7d)
+- ✅ Multi-panel layout dengan berbagai visualization types
+- ✅ Drill-down capabilities untuk detailed analysis
+- ✅ Alert annotations pada graph
+- ✅ Variable templates untuk filtering
+
+![Grafana Dashboard](public/images/grafana1.png)
+
+**Grafana Dashboard Panels:**
+1. **System Overview** - CPU, Memory, Network summary
+2. **Request Performance** - Latency heatmaps dan histograms
+3. **Error Tracking** - Error rate dan error types
+4. **Database Performance** - Query time, connection pool
+5. **Pod Status** - Kubernetes pod health
+6. **Custom Application Metrics** - Booking rates, user activity
+
+**Access Grafana:**
+```bash
+# Local Development
+http://localhost:3001
+
+# Kubernetes
+kubectl port-forward -n consearch svc/grafana 3001:80
+
+# Default Credentials
+Username: admin
+Password: admin
+```
+
+---
+
+### 🚨 Prometheus Alerts
+
+Prometheus mengumpulkan metrics dan mengevaluasi alert rules untuk mendeteksi masalah secara proaktif.
+
+**Alert Rules yang Dikonfigurasi:**
+
+#### Critical Alerts (P0)
+- **ServiceDown**: Service tidak merespon selama 2 menit
+- **HighErrorRate**: Error rate > 5% selama 5 menit
+- **DatabaseDown**: PostgreSQL tidak dapat diakses
+- **OutOfMemory**: Memory usage > 90% selama 5 menit
+
+#### Warning Alerts (P1)
+- **HighCPUUsage**: CPU usage > 80% selama 10 menit
+- **HighLatency**: P95 response time > 500ms selama 5 menit
+- **LowDiskSpace**: Disk usage > 85%
+- **HighConnectionCount**: Database connections > 80% pool limit
+
+#### Info Alerts (P2)
+- **PodRestartHigh**: Pod restart > 5 kali dalam 1 jam
+- **SlowQueries**: Database query > 1s
+- **HighMemoryUsage**: Memory usage > 75%
+- **ScalingEvent**: HPA scaling triggered
+
+![Prometheus Alerts](public/images/prometheusalerts1.png)
+
+**Alert Status Indicators:**
+- 🔴 **Firing**: Alert aktif, membutuhkan action immediate
+- 🟡 **Pending**: Alert dalam evaluasi, akan firing jika kondisi berlanjut
+- 🟢 **Resolved**: Alert telah resolved, sistem normal
+
+**Alert Routing:**
+- Email notifications untuk critical alerts
+- Slack integration untuk team notifications
+- PagerDuty untuk on-call escalation
+- Webhook untuk custom integrations
+
+**Alert Evaluation:**
+```yaml
+# Example Alert Rule
+alert: HighLatency
+expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+for: 5m
+severity: warning
+annotations:
+  summary: "High latency detected on {{ $labels.instance }}"
+  description: "P95 latency is {{ $value }}s"
+```
+
+---
+
+### 🎯 Prometheus Targets
+
+Prometheus scrapes metrics dari berbagai targets/endpoints untuk monitoring komprehensif.
+
+**Monitored Targets:**
+
+#### Application Targets
+- **Backend API** (consearch-backend:3000/metrics)
+  - Status: ✅ UP
+  - Scrape Interval: 15s
+  - Metrics: HTTP requests, response times, error rates
+
+- **PostgreSQL Exporter** (postgres-exporter:9187/metrics)
+  - Status: ✅ UP
+  - Scrape Interval: 30s
+  - Metrics: Database connections, query performance, cache hits
+
+#### Infrastructure Targets
+- **Node Exporter** (node-exporter:9100/metrics)
+  - Status: ✅ UP
+  - Scrape Interval: 15s
+  - Metrics: CPU, memory, disk, network stats
+
+- **Kubernetes API** (kubernetes.default.svc/metrics)
+  - Status: ✅ UP
+  - Scrape Interval: 30s
+  - Metrics: Pod status, deployment state, resource usage
+
+#### Monitoring Stack Targets
+- **Prometheus** (self-monitoring)
+  - Status: ✅ UP
+  - Scrape Interval: 15s
+  - Metrics: Query performance, storage, scrape duration
+
+- **Grafana** (grafana:3000/metrics)
+  - Status: ✅ UP
+  - Scrape Interval: 30s
+  - Metrics: Dashboard views, active users, API calls
+
+![Prometheus Targets](public/images/prometheustargets1.png)
+
+**Target Health Status:**
+- ✅ **UP**: Target healthy dan responding
+- ❌ **DOWN**: Target tidak dapat dijangkau
+- ⚠️ **UNKNOWN**: Target status tidak dapat ditentukan
+
+**Target Configuration:**
+```yaml
+scrape_configs:
+  - job_name: 'consearch-backend'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['localhost:3000']
+    metrics_path: /metrics
+```
+
+**Troubleshooting Down Targets:**
+```bash
+# Check target connectivity
+curl http://target-host:port/metrics
+
+# Check Prometheus config
+kubectl exec -n consearch prometheus-pod -- promtool check config /etc/prometheus/prometheus.yml
+
+# View Prometheus logs
+kubectl logs -n consearch -l app=prometheus
+
+# Reload Prometheus config
+curl -X POST http://prometheus:9090/-/reload
+```
+
+---
+
+### 🔔 Alertmanager Configuration
+
+Alertmanager mengelola alert routing, grouping, silencing, dan notification.
+
+**Alert Routing Strategy:**
+
+```yaml
+# Alert Grouping
+group_by: ['alertname', 'cluster', 'service']
+group_wait: 10s        # Wait before sending initial notification
+group_interval: 10s    # Wait before sending batch of new alerts
+repeat_interval: 12h   # Resend alert if still firing
+
+# Notification Channels
+receivers:
+  - name: 'critical-team'
+    email_configs:
+      - to: 'oncall@consearch.com'
+    slack_configs:
+      - channel: '#alerts-critical'
+    pagerduty_configs:
+      - service_key: '<service-key>'
+
+  - name: 'warning-team'
+    slack_configs:
+      - channel: '#alerts-warning'
+    email_configs:
+      - to: 'team@consearch.com'
+```
+
+**Alert Lifecycle:**
+1. **Detection**: Prometheus evaluates alert rules
+2. **Firing**: Alert condition met, sent to Alertmanager
+3. **Grouping**: Similar alerts grouped together
+4. **Routing**: Routed to appropriate receivers
+5. **Notification**: Sent via configured channels
+6. **Resolution**: Alert resolved when condition clears
+
+**Silencing Alerts:**
+```bash
+# Silence alert via API
+curl -X POST http://alertmanager:9093/api/v1/silences \
+  -d '{
+    "matchers": [{"name":"alertname","value":"HighLatency"}],
+    "startsAt": "2026-01-21T10:00:00Z",
+    "endsAt": "2026-01-21T12:00:00Z",
+    "comment": "Planned maintenance"
+  }'
+
+# Silence via amtool
+amtool silence add alertname=HighLatency --duration=2h --comment="Maintenance"
+```
+
+---
+
+### 📊 Custom Metrics Implementation
+
+Aplikasi CONSEARCH mengekspos custom metrics untuk monitoring bisnis dan performa.
+
+**Metrics yang Diimplementasi:**
+
+#### Counter Metrics
+```javascript
+// Total requests
+http_requests_total{method="GET", endpoint="/api/events", status="200"}
+
+// Total bookings
+bookings_total{event_id="1", status="success"}
+
+// Total registrations
+user_registrations_total{status="success"}
+```
+
+#### Gauge Metrics
+```javascript
+// Active sessions
+active_sessions{} 50
+
+// Current stock
+event_stock{event_id="1", event_name="NEWJEANS LIVE"} 395
+
+// Database connections
+db_connections_active{} 15
+db_connections_idle{} 35
+```
+
+#### Histogram Metrics
+```javascript
+// Request duration
+http_request_duration_seconds_bucket{le="0.1"} 850
+http_request_duration_seconds_bucket{le="0.5"} 920
+http_request_duration_seconds_bucket{le="1.0"} 950
+
+// Database query duration
+db_query_duration_seconds_bucket{le="0.05"} 1200
+db_query_duration_seconds_bucket{le="0.1"} 1280
+```
+
+**Implementation Example:**
+```javascript
+const promClient = require('prom-client');
+
+// Create metrics
+const httpRequestDuration = new promClient.Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'Duration of HTTP requests in seconds',
+  labelNames: ['method', 'route', 'status_code'],
+  buckets: [0.1, 0.5, 1, 2, 5]
+});
+
+// Track metric
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = (Date.now() - start) / 1000;
+    httpRequestDuration.observe({
+      method: req.method,
+      route: req.route?.path || 'unknown',
+      status_code: res.statusCode
+    }, duration);
+  });
+  next();
+});
+
+// Expose metrics endpoint
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', promClient.register.contentType);
+  res.end(await promClient.register.metrics());
+});
+```
+
+---
+
+### 🎯 Monitoring Access & Setup
+
+#### Quick Start Monitoring Stack
+
+```bash
+# Docker Compose (Development)
+docker-compose up -d
+
+# Access Services
+Grafana:        http://localhost:3001
+Prometheus:     http://localhost:9090
+Alertmanager:   http://localhost:9093
+App Metrics:    http://localhost:3000/metrics
+
+# Kubernetes (Production)
+kubectl apply -f k8s/
+
+# Port Forward Services
+kubectl port-forward -n consearch svc/grafana 3001:80
+kubectl port-forward -n consearch svc/prometheus 9090:9090
+kubectl port-forward -n consearch svc/alertmanager 9093:9093
+```
+
+#### Pre-configured Dashboards
+
+**Grafana Dashboards yang Tersedia:**
+1. **CONSEARCH Monitoring** (ID: 1) - Main application dashboard
+2. **Node Exporter Full** (ID: 1860) - System metrics
+3. **Kubernetes Cluster** (ID: 7249) - K8s overview
+4. **PostgreSQL Database** (ID: 9628) - Database performance
+
+**Import Dashboard:**
+```bash
+# Via Grafana UI
+1. Go to Dashboard → Import
+2. Enter Dashboard ID or upload JSON
+3. Select Prometheus datasource
+4. Click Import
+
+# Via API
+curl -X POST http://admin:admin@localhost:3001/api/dashboards/db \
+  -H "Content-Type: application/json" \
+  -d @grafana/provisioning/dashboards/files/consearch-monitoring.json
+```
+
+---
+
+### 📈 Monitoring Best Practices
+
+#### 1. **Alert Fatigue Prevention**
+- Set appropriate thresholds
+- Use alert grouping
+- Implement alert silencing during maintenance
+- Regular review and tuning of alert rules
+
+#### 2. **Dashboard Organization**
+- Create role-specific dashboards (DevOps, Business, Developers)
+- Use consistent naming conventions
+- Implement dashboard folders
+- Add documentation panels
+
+#### 3. **Metrics Strategy**
+- Follow naming conventions (snake_case)
+- Use appropriate metric types
+- Add meaningful labels
+- Avoid high cardinality labels
+
+#### 4. **Data Retention**
+```yaml
+# Prometheus retention
+--storage.tsdb.retention.time=15d
+--storage.tsdb.retention.size=50GB
+
+# Grafana datasource config
+timeInterval: "15s"
+queryTimeout: "60s"
+```
+
+#### 5. **Performance Optimization**
+- Optimize PromQL queries
+- Use recording rules for expensive queries
+- Implement metric relabeling
+- Monitor Prometheus itself
+
+---
+
+### 🔍 Troubleshooting Monitoring Stack
+
+#### Prometheus Not Scraping
+```bash
+# Check targets status
+curl http://localhost:9090/api/v1/targets
+
+# Verify configuration
+promtool check config prometheus.yml
+
+# Check service discovery
+curl http://localhost:9090/api/v1/targets/metadata
+```
+
+#### Grafana Dashboard Not Showing Data
+```bash
+# Test Prometheus datasource
+curl http://localhost:3001/api/datasources/proxy/1/api/v1/query?query=up
+
+# Check Prometheus connectivity
+kubectl exec -n consearch grafana-pod -- curl prometheus:9090/-/healthy
+
+# Verify time range and timezone settings
+```
+
+#### Alerts Not Firing
+```bash
+# Check alert rules
+curl http://localhost:9090/api/v1/rules
+
+# Verify Alertmanager connectivity
+curl http://localhost:9090/api/v1/alertmanagers
+
+# Check Alertmanager logs
+kubectl logs -n consearch -l app=alertmanager
+```
+
+---
+
+## �📚 Documentation
 
 - **[QUICKSTART.md](./QUICKSTART.md)** - Get started in 5 minutes
 - **[AUTH_DOCUMENTATION.md](./AUTH_DOCUMENTATION.md)** - Complete auth documentation
