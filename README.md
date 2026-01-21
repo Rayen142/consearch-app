@@ -850,7 +850,7 @@ Pada pengembangan aplikasi CONSEARCH ini, saya mengimplementasikan sistem monito
 
 Dalam implementasi ini, saya menggunakan tiga komponen utama yaitu **Prometheus** sebagai metrics collector, **Grafana** sebagai visualization tool, dan **Alertmanager** sebagai sistem notifikasi. Ketiga komponen ini bekerja secara sinergis untuk memberikan visibilitas penuh terhadap performa aplikasi.
 
-![Dashboard Overview](<img width="1642" height="1206" alt="dashboard1" src="https://github.com/user-attachments/assets/dcb3e2e6-00e2-4f53-b036-cab4d8e38993" />)
+![Dashboard Overview](public/images/dashboard1.png)
 
 *Gambar di atas menunjukkan tampilan dashboard utama sistem monitoring yang telah saya konfigurasi.*
 
@@ -886,7 +886,7 @@ Dalam konfigurasi Grafana, saya membuat beberapa panel untuk memonitor aspek-asp
 
 Berikut adalah tampilan dashboard Grafana yang telah saya implementasikan:
 
-![Grafana Dashboard](<img width="1647" height="1072" alt="grafana1" src="https://github.com/user-attachments/assets/23f82804-17d6-4760-8df5-cb4134e251e9" />)
+![Grafana Dashboard](public/images/grafana1.png)
 
 Dari dashboard tersebut, dapat dilihat bahwa saya telah mengkonfigurasi beberapa panel penting meliputi System Overview untuk ringkasan CPU dan Memory, Request Performance untuk melihat latency, serta Error Tracking untuk memantau tingkat error pada aplikasi.
 
@@ -924,7 +924,7 @@ Alert ini bersifat informatif untuk awareness.
 
 Berikut adalah tampilan halaman Alerts pada Prometheus yang menunjukkan status alert rules yang telah saya konfigurasi:
 
-![Prometheus Alerts](<img width="1645" height="1313" alt="prometheusalerts1" src="https://github.com/user-attachments/assets/8746e395-51a3-441c-9842-c0cfc9fd11ce" />)
+![Prometheus Alerts](public/images/prometheusalerts1.png)
 
 Pada gambar tersebut terlihat status masing-masing alert rule. Indikator warna menunjukkan kondisi alert: hijau berarti kondisi normal, kuning berarti alert dalam evaluasi, dan merah menandakan alert sedang aktif (firing).
 
@@ -952,7 +952,7 @@ Prometheus mengumpulkan metrics dengan cara melakukan scraping ke berbagai endpo
 
 Berikut adalah tampilan halaman Targets pada Prometheus yang menunjukkan status koneksi ke masing-masing endpoint:
 
-![Prometheus Targets](<img width="1643" height="983" alt="prometheustargets1" src="https://github.com/user-attachments/assets/e09a01ab-9ad9-402b-b795-f15570a21a50" />)
+![Prometheus Targets](public/images/prometheustargets1.png)
 
 Gambar di atas menampilkan status UP untuk semua targets yang dikonfigurasi, menandakan bahwa Prometheus berhasil melakukan scraping metrics dari seluruh endpoint. Jika terdapat target dengan status DOWN, hal tersebut mengindikasikan adanya masalah konektivitas yang perlu ditangani.
 
