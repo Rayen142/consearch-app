@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consearch - Live Concert Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #000; color: white; overflow-x: hidden; transition: background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Ambient Background */
+        #ambient-bg {
+            position: fixed; inset: 0; z-index: -1;
+            background: radial-gradient(circle at 50% 30%, var(--bg-color, #8b5cf6), #000 70%);
+            opacity: 0.75; transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-icon { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .nav-icon:hover { transform: scale(1.15); }
+
+        .sidebar { transform: translateX(-100%); transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); background: linear-gradient(135deg, rgba(15, 15, 15, 0.95) 0%, rgba(20, 20, 30, 0.95) 100%); }
+        .sidebar.open { transform: translateX(0); }
+
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.12); }
+        .glass-dark { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        .slider-container { 
+            display: flex; overflow-x: scroll; scroll-snap-type: x mandatory; scroll-behavior: smooth; 
+            gap: 1.5rem; padding: 2rem 0; align-items: center;
+        }
+        .slider-container::-webkit-scrollbar { display: none; }
+        
+        .slide-card { 
+            flex: 0 0 40%; scroll-snap-align: center; transform: scale(0.65) blur(5px);
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s ease, filter 0.8s ease, box-shadow 0.8s ease;
+            opacity: 0.3; filter: blur(14px) brightness(0.5); cursor: pointer; position: relative; border-radius: 2.5rem; 
+            overflow: hidden; box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+        }
+        
+        .slide-card.active { 
+            transform: scale(1.35) blur(0px); opacity: 1; z-index: 20; filter: blur(0px) brightness(1);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 60px rgba(139, 92, 246, 0.3);
+        }
+        
+        .slide-card:hover:not(.active) { transform: scale(0.72) blur(4px); }
+        
+        @media (min-width: 768px) { .slide-card { flex: 0 0 42%; } }
+        @media (min-width: 1024px) { .slide-card { flex: 0 0 35%; } }
+
+        .modal-overlay { animation: fadeInOverlay 0.4s ease-out; }
+        @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-content { animation: slideUpModal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes slideUpModal { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Modal Backdrop Blur - Smooth Effect */
+        body.modal-open {
+            overflow: hidden;
+        }
+        
+        body.modal-open #slider,
+        body.modal-open #calendar-grid {
+            filter: blur(12px) brightness(0.7);
+            transition: filter 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Image Edge Fade - Smooth Blur Effect */
+        /* Image Edge Fade - Smooth Blur Effect */
+        .image-fade-edges {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-fade-edges::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse 100% 100% at 50% 50%, 
+                    transparent 0%, 
+                    transparent 25%,
+                    rgba(0, 0, 0, 0.1) 40%, 
+                    rgba(0, 0, 0, 0.3) 60%, 
+                    rgba(0, 0, 0, 0.5) 80%,
+                    rgba(0, 0, 0, 0.7) 100%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .image-fade-edges::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(to right, 
+                    rgba(0, 0, 0, 0.3) 0%, 
+                    transparent 20%, 
+                    transparent 80%, 
+                    rgba(0, 0, 0, 0.3) 100%),
+                linear-gradient(to bottom, 
+                    rgba(0, 0, 0, 0.2) 0%, 
+                    transparent 15%, 
+                    transparent 85%, 
+                    rgba(0, 0, 0, 0.3) 100%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .user-menu { animation: dropdownMenu 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: top right; }
+        @keyframes dropdownMenu { from { opacity: 0; transform: translateY(-10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        /* Calendar Gradient Background */
+        .calendar-gradient-bg {
+            background: black;
+            position: relative;
+        }
+
+        .calendar-gradient-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, var(--calendar-gradient-color, rgba(139, 92, 246, 0.08)), transparent 70%);
+            opacity: 0.6;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #calendar-grid {
+            position: relative;
+            z-index: 1;
+        }
+
+        .calendar-card { 
+            transition: all 0.4s ease; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 100%);
+        }
+        .calendar-card:hover { 
+            transform: translateY(-8px); 
+            border-color: rgba(255, 255, 255, 0.3); 
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5),
+                        0 0 30px var(--card-glow, rgba(139, 92, 246, 0.2));
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 100%);
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        .ticket-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+        .color-transition { transition: color 0.8s ease, background-color 0.8s ease; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div id="ambient-bg"></div>
+
+    <!-- NAVBAR -->
+    <nav class="fixed w-full z-50 px-4 md:px-8 py-4 flex justify-between items-center bg-gradient-to-b from-black/95 to-black/50 backdrop-blur-md border-b border-white/5">
+        
+        <button onclick="toggleSidebar()" class="group z-50 relative flex items-center justify-center">
+            <div id="burger-icon" class="space-y-1.5 p-2 glass rounded-xl hover:bg-white/20 transition">
+                <span class="block w-6 h-0.5 bg-white transition duration-300 origin-center"></span>
+                <span class="block w-4 h-0.5 bg-white transition duration-300 origin-center"></span>
+                <span class="block w-6 h-0.5 bg-white transition duration-300 origin-center"></span>
+            </div>
+        </button>
+
+        <h1 class="text-xl md:text-2xl font-extrabold tracking-[0.25em] text-white/90 drop-shadow-lg">CONSEARCH</h1>
+
+        <div class="flex items-center gap-3 md:gap-6">
+            <button onclick="toggleMyTickets()" class="nav-icon p-2 glass rounded-xl relative group" title="My Tickets">
+                <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
+                <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-black animate-pulse-slow"></span>
+            </button>
+            <button onclick="toggleUserMenu()" class="nav-icon w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-sm border-2 border-white/20 hover:border-white/40" title="Profile">
+                U
+            </button>
+        </div>
+    </nav>
+
+    <!-- SIDEBAR MENU -->
+    <div id="sidebar" class="sidebar fixed inset-y-0 left-0 w-64 md:w-72 z-40 flex flex-col pt-24 px-6 md:px-8 border-r border-white/10 shadow-2xl overflow-y-auto">
+        <div class="space-y-8">
+            <div class="flex items-center gap-2 text-white/40 text-xs font-bold uppercase tracking-widest mb-4">
+                <span class="inline-block w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></span>
+                Menu
+            </div>
+            
+            <a href="#" onclick="closeSidebar()" class="text-lg md:text-xl font-bold text-white hover:text-indigo-400 transition duration-300 flex items-center gap-3 group">
+                <span class="text-2xl">👤</span>
+                <span class="group-hover:translate-x-1 transition">Account</span>
+            </a>
+            
+            <a href="#calendar-section" onclick="closeSidebar()" class="text-lg md:text-xl font-bold text-white hover:text-indigo-400 transition duration-300 flex items-center gap-3 group">
+                <span class="text-2xl">📅</span>
+                <span class="group-hover:translate-x-1 transition">Events</span>
+            </a>
+
+            <div class="h-px bg-gradient-to-r from-white/10 to-transparent my-6"></div>
+            
+            <div class="space-y-4">
+                <label class="text-sm font-bold text-white/60 uppercase tracking-wider block">Language</label>
+                <div class="flex gap-2">
+                    <button onclick="setLanguage('en')" id="lang-en" class="flex-1 px-4 py-2 rounded-lg font-bold text-sm transition duration-300 bg-indigo-500/80 text-white border-2 border-indigo-500">EN</button>
+                    <button onclick="setLanguage('id')" id="lang-id" class="flex-1 px-4 py-2 rounded-lg font-bold text-sm transition duration-300 text-white/60 border-2 border-white/20 hover:border-white/40">ID</button>
+                </div>
+            </div>
+
+            <a href="#" onclick="closeSidebar(); alert('Help Center - Coming Soon')" class="text-base text-white/60 hover:text-white transition duration-300 flex items-center gap-2 group">
+                <span>❓</span>
+                <span class="group-hover:translate-x-1 transition">Help Center</span>
+            </a>
+        </div>
+
+        <div class="mt-auto mb-8 text-xs text-white/40 font-medium">
+            <p class="mb-2">Consearch Platform</p>
+            <p class="text-white/30">Cloud Concert Booking</p>
+        </div>
+    </div>
+
+    <!-- MAIN SLIDER SECTION -->
+    <div id="slider-section" class="relative min-h-screen flex flex-col justify-center pt-20 md:pt-24 px-4 md:px-8">
+        <div class="max-w-7xl mx-auto w-full">
+            <h2 id="hero-title" class="text-3xl md:text-5xl font-extrabold mb-6 md:mb-12 drop-shadow-lg color-transition">Trending Concerts</h2>
+            
+            <div id="slider" class="slider-container px-0 md:px-10">
+            </div>
+        </div>
+
+        <div class="absolute bottom-8 md:bottom-12 w-full text-center text-white/40 text-xs md:text-sm animate-pulse-slow">
+            ← Drag atau Scroll Untuk Explore →
+        </div>
+
+        <!-- Smooth Gradient Transition -->
+        <div class="absolute bottom-0 left-0 right-0 h-40 md:h-64 bg-gradient-to-b from-transparent via-black/20 to-black pointer-events-none"></div>
+    </div>
+
+    <!-- CALENDAR SECTION -->
+    <div id="calendar-section" class="relative z-10 bg-black py-12 md:py-24 px-4 md:px-8 calendar-gradient-bg transition-all duration-700">
+        <div class="max-w-7xl mx-auto">
+            <h2 id="calendar-title" class="text-3xl md:text-4xl font-extrabold mb-4 md:mb-6 flex items-center gap-3">
+                <span class="text-indigo-500 text-4xl md:text-5xl">#</span>
+                <span class="color-transition" id="calendar-heading">Discover Local Events</span>
+            </h2>
+            <p id="calendar-subtitle" class="text-white/60 mb-10 md:mb-16 text-sm md:text-base">Kumpulan konser dan event lokal terbaik minggu ini</p>
+            
+            <div id="calendar-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            </div>
+        </div>
+    </div>
+
+    <!-- DETAIL MODAL -->
+    <div id="detail-modal" class="fixed inset-0 z-[60] bg-black/98 hidden flex-col md:flex-row animate-fade-in overflow-y-auto md:overflow-hidden modal-overlay">
+        <div class="absolute inset-0 z-0" onclick="closeModal()"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row w-full min-h-screen md:h-screen">
+            <div class="w-full md:w-1/2 h-64 md:h-full relative">
+                <img id="modal-img" src="" class="w-full h-full object-cover opacity-90 image-fade-edges">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                <button onclick="closeModal()" class="absolute top-4 md:top-6 left-4 md:left-6 glass p-2 md:p-3 rounded-lg text-white hover:bg-white/20 md:hidden">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                </button>
+            </div>
+            
+            <div class="w-full md:w-1/2 p-6 md:p-12 lg:p-16 flex flex-col justify-center relative bg-gradient-to-b md:bg-gradient-to-r from-black/50 to-black/20">
+                <button onclick="closeModal()" class="absolute top-4 md:top-8 right-4 md:right-8 text-white/60 hover:text-white hidden md:block text-2xl transition">
+                    <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                </button>
+                
+                <span id="modal-cat" class="text-indigo-400 font-bold tracking-widest text-xs mb-3 w-fit px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40">CONCERT</span>
+                
+                <h2 id="modal-title" class="text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-6 md:mb-8">Event Title</h2>
+                
+                <p id="modal-desc" class="text-sm md:text-base text-white/70 mb-8 leading-relaxed line-clamp-3">Event description will appear here</p>
+
+                <div class="grid grid-cols-2 gap-4 md:gap-6 mb-8">
+                    <div class="glass-dark p-4 md:p-5 rounded-2xl">
+                        <p class="text-xs text-white/60 uppercase tracking-wider mb-1">📍 Location</p>
+                        <p id="modal-loc" class="font-bold text-white text-sm md:text-base">City</p>
+                    </div>
+                    <div class="glass-dark p-4 md:p-5 rounded-2xl">
+                        <p class="text-xs text-white/60 uppercase tracking-wider mb-1">📅 Date</p>
+                        <p id="modal-date" class="font-bold text-white text-sm md:text-base">Date</p>
+                    </div>
+                </div>
+
+                <div class="glass-dark p-5 md:p-6 rounded-2xl border-l-4 border-indigo-500 mb-8">
+                    <p class="text-xs text-white/60 uppercase tracking-wider mb-2">Starting Price</p>
+                    <div class="flex items-baseline gap-3">
+                        <span id="modal-price" class="text-3xl md:text-4xl font-extrabold text-white">Rp 1.500.000</span>
+                        <span id="modal-price-idr" class="text-xs text-white/50">(per ticket)</span>
+                    </div>
+                </div>
+
+                <div class="glass-dark p-5 md:p-6 rounded-2xl mb-8 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-white/60 uppercase tracking-wider mb-2">Available Tickets</p>
+                        <p id="modal-stock" class="text-2xl md:text-3xl font-extrabold text-white">250</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-green-400 font-bold animate-pulse-slow">● Selling</p>
+                        <p class="text-xs text-green-400">● Fast</p>
+                    </div>
+                </div>
+
+                <!-- Kategori Tempat Duduk -->
+                <div class="mb-8">
+                    <p class="text-sm font-bold text-white/80 uppercase tracking-wider mb-4">Pilih Kategori Tempat Duduk</p>
+                    <div id="seat-categories" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Categories will be rendered here -->
+                    </div>
+                </div>
+
+                <button id="modal-btn" onclick="" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-extrabold py-3 md:py-4 rounded-xl hover:from-indigo-600 hover:to-purple-700 transition transform active:scale-95 text-base md:text-lg shadow-lg hover:shadow-indigo-500/50">
+                    BOOK TICKET NOW
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- USER MENU DROPDOWN -->
+    <div id="user-menu" class="fixed top-16 md:top-20 right-4 md:right-8 w-56 md:w-64 glass-dark rounded-2xl p-4 md:p-6 hidden z-50 user-menu shadow-2xl">
+        <div id="user-menu-content"></div>
+    </div>
+        </div>
+    </div>
+
+    <!-- MY TICKETS MODAL -->
+    <div id="my-tickets-modal" class="fixed inset-0 z-[60] bg-black/98 hidden flex-col modal-overlay overflow-y-auto">
+        <div class="max-w-4xl mx-auto w-full p-4 md:p-8">
+            <div class="flex items-center justify-between mb-8 mt-20 md:mt-24">
+                <h2 class="text-2xl md:text-3xl font-extrabold">My Tickets</h2>
+                <button onclick="closeMyTickets()" class="text-white/60 hover:text-white text-2xl">✕</button>
+            </div>
+
+            <div id="tickets-list" class="space-y-4 md:space-y-6">
+                <div class="text-center py-12 text-white/50">
+                    <p class="text-lg mb-4">No tickets purchased yet</p>
+                    <p class="text-sm">Book your first concert and it will appear here!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== AUTHENTICATION SYSTEM ==========
+        let currentUser = null;
+        const token = localStorage.getItem('token');
+        
+        // Initialize auth
+        async function initAuth() {
+            if (!token) {
+                renderUnauthenticatedMenu();
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    currentUser = await response.json();
+                    renderAuthenticatedMenu();
+                } else {
+                    // Token expired or invalid
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    renderUnauthenticatedMenu();
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                renderUnauthenticatedMenu();
+            }
+        }
+
+        function renderUnauthenticatedMenu() {
+            const menuContent = document.getElementById('user-menu-content');
+            menuContent.innerHTML = `
+                <div class="space-y-2">
+                    <div class="text-xs text-white/50 font-bold uppercase tracking-wider mb-4 pb-3 border-b border-white/10">Quick Access</div>
+                    
+                    <button onclick="window.location.href='/register.html'" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm text-white/80 hover:text-white flex items-center gap-2">
+                        <span>📝</span> <span>Create Account</span>
+                    </button>
+                    
+                    <button onclick="window.location.href='/login.html'" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm text-white/80 hover:text-white flex items-center gap-2">
+                        <span>🔐</span> <span>Sign In</span>
+                    </button>
+
+                    <div class="h-px bg-white/10 my-2"></div>
+
+                    <button onclick="closeUserMenu(); alert('Feature: Help Desk - Coming Soon')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm text-white/80 hover:text-white flex items-center gap-2">
+                        <span>❓</span> <span>Help Desk</span>
+                    </button>
+
+                    <button onclick="closeUserMenu(); alert('Feature: About Consearch - Coming Soon')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm text-white/80 hover:text-white flex items-center gap-2">
+                        <span>ℹ️</span> <span>About Consearch</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderAuthenticatedMenu() {
+            const menuContent = document.getElementById('user-menu-content');
+            const userInitials = currentUser.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+            
+            menuContent.innerHTML = `
+                <div class="space-y-2">
+                    <div class="px-3 py-3 rounded-lg bg-gradient-to-r from-indigo-500/20 to-pink-500/20 border border-white/10 mb-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center font-bold">
+                                ${userInitials}
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-white">${currentUser.full_name}</p>
+                                <p class="text-xs text-white/60">${currentUser.email}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-xs text-white/50 font-bold uppercase tracking-wider mb-3 pb-2 border-b border-white/10">Account</div>
+                    
+                    <button onclick="window.location.href='#my-tickets'; closeUserMenu(); toggleMyTickets()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm text-white/80 hover:text-white flex items-center gap-2">
+                        <span>🎫</span> <span>My Tickets</span>
+                    </button>
+                    
+                    <button onclick="editProfile()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm text-white/80 hover:text-white flex items-center gap-2">
+                        <span>👤</span> <span>Edit Profile</span>
+                    </button>
+
+                    <div class="h-px bg-white/10 my-2"></div>
+
+                    <button onclick="closeUserMenu(); alert('Feature: Help Desk - Coming Soon')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm text-white/80 hover:text-white flex items-center gap-2">
+                        <span>❓</span> <span>Help Desk</span>
+                    </button>
+
+                    <button onclick="closeUserMenu(); alert('Feature: Give Rating - Coming Soon')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm text-yellow-400 hover:text-yellow-300 flex items-center gap-2">
+                        <span>⭐</span> <span>Give Rating</span>
+                    </button>
+
+                    <div class="h-px bg-white/10 my-2"></div>
+
+                    <button onclick="logout()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-red-500/20 transition text-sm text-red-400 hover:text-red-300 font-semibold flex items-center gap-2">
+                        <span>🚪</span> <span>Sign Out</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            currentUser = null;
+            closeUserMenu();
+            alert('Signed out successfully!');
+            window.location.href = '/login.html';
+        }
+
+        function editProfile() {
+            const newName = prompt('Enter your full name:', currentUser.full_name);
+            if (newName && newName.trim()) {
+                currentUser.full_name = newName.trim();
+                renderAuthenticatedMenu();
+                alert('Profile updated!');
+            }
+        }
+
+        // ========== LANGUAGE SYSTEM ==========
+        let currentLanguage = 'en';
+        const translations = {
+            en: {
+                heroTitle: 'Trending Concerts',
+                calendarHeading: 'Discover Local Events',
+                calendarSubtitle: 'Collection of best concerts and local events this week',
+                dragInstruction: '← Drag or Scroll to Explore →'
+            },
+            id: {
+                heroTitle: 'Konser Trending',
+                calendarHeading: 'Jelajahi Event Lokal',
+                calendarSubtitle: 'Kumpulan konser dan event lokal terbaik minggu ini',
+                dragInstruction: '← Geser atau Scroll untuk Eksplorasi →'
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            document.getElementById('lang-en').classList.toggle('bg-indigo-500/80 text-white border-indigo-500', lang === 'en');
+            document.getElementById('lang-en').classList.toggle('text-white/60 border-white/20', lang !== 'en');
+            document.getElementById('lang-id').classList.toggle('bg-indigo-500/80 text-white border-indigo-500', lang === 'id');
+            document.getElementById('lang-id').classList.toggle('text-white/60 border-white/20', lang !== 'id');
+            document.getElementById('lang-indicator').innerText = lang.toUpperCase();
+            
+            document.getElementById('hero-title').innerText = translations[lang].heroTitle;
+            document.getElementById('calendar-heading').innerText = translations[lang].calendarHeading;
+            document.getElementById('calendar-subtitle').innerText = translations[lang].calendarSubtitle;
+        }
+
+        // ========== EVENT DATA ==========
+        const eventColors = {
+            1: '#8b5cf6', // IVE - Purple
+            2: '#f59e0b', // NewJeans - Amber
+            3: '#ec4899', // BabyMonster - Pink
+            4: '#06b6d4', // Westlife - Cyan
+            5: '#10b981', // Seventeen - Emerald
+            6: '#f97316', // Stray Kids - Orange
+            7: '#6366f1', // Blackpink - Indigo
+            8: '#06b6d4', // TWICE - Cyan
+        };
+
+        let allEvents = [
+            {
+                id: 1, name: 'CAN THIS LOVE BE TRANSLATED?', category: 'FAN MEET', location: 'The Kasablanka Hall - Jakarta Selatan', date: '2026-02-10',
+                price: 'FREE', priceIDR: 'Gratis (Netflix)', stock: 200, theme_color: '#ffc0cb', 
+                image_url: '/images/fanmeet1.jpg',
+                description: 'Meet and greet eksklusif dari Netflix! Kesempatan langka untuk bertemu para bintang. Gratis untuk semua member Netflix.', is_major: true,
+                seatCategories: [
+                    { name: 'Front Row', price: 'GRATIS', color: '#fbbf24' },
+                    { name: 'Regular', price: 'GRATIS', color: '#60a5fa' }
+                ]
+            },
+            {
+                id: 2, name: 'NEWJEANS LIVE', category: 'CONCERT', location: 'Gelora Bung Karno Stadium - Jakarta Pusat', date: '2026-02-22',
+                price: '$95', priceIDR: 'Rp 1.500.000', stock: 400, theme_color: '#87ceeb',
+                image_url: '/images/konser1.jpeg',
+                description: 'NewJeans brings their mesmerizing performances to Jakarta. Witness stunning visuals and powerful stage presence as they perform fan-favorite tracks and exclusive previews.', is_major: true,
+                seatCategories: [
+                    { name: 'VIP', price: 'Rp 2.500.000', color: '#fbbf24' },
+                    { name: 'Premium', price: 'Rp 1.800.000', color: '#ec4899' },
+                    { name: 'Regular', price: 'Rp 1.500.000', color: '#60a5fa' }
+                ]
+            },
+            {
+                id: 3, name: 'HAN SO HEE FAN MEET', category: 'FAN MEET', location: 'The Kasablanka Hall - Jakarta Selatan', date: '2026-02-28',
+                price: '$45', priceIDR: 'Rp 750.000', stock: 150, theme_color: '#ec4899',
+                image_url: '/images/fanmeet2.jpeg',
+                description: 'Exclusive fan meet session dengan Han So Hee! Dapatkan tanda tangan, photo session, dan kesempatan berbincang langsung dengan aktris Korea Selatan yang terkenal.', is_major: true,
+                seatCategories: [
+                    { name: 'Meet & Greet + Photo', price: 'Rp 1.200.000', color: '#fbbf24' },
+                    { name: 'Photo Only', price: 'Rp 750.000', color: '#60a5fa' }
+                ]
+            },
+            {
+                id: 4, name: 'BABYMONSTER WORLD TOUR', category: 'CONCERT', location: 'Jakarta Convention Center - Jakarta Pusat', date: '2026-03-08',
+                price: '$75', priceIDR: 'Rp 1.200.000', stock: 320, theme_color: '#dc143c',
+                image_url: '/images/konser2.jpeg',
+                description: 'BabyMonster returns with high-energy performances. Get ready for explosive dance routines, vocal excellence, and interactive fan engagement like never before.', is_major: true,
+                seatCategories: [
+                    { name: 'VIP Pit', price: 'Rp 2.200.000', color: '#fbbf24' },
+                    { name: 'Premium', price: 'Rp 1.600.000', color: '#ec4899' },
+                    { name: 'Regular', price: 'Rp 1.200.000', color: '#60a5fa' }
+                ]
+            },
+            {
+                id: 5, name: 'WESTLIFE NOSTALGIA', category: 'CONCERT', location: 'Graha Unesa Surabaya', date: '2026-03-15',
+                price: '$85', priceIDR: 'Rp 1.350.000', stock: 180, theme_color: '#06b6d4',
+                image_url: '/images/konser3.jpeg',
+                description: 'Westlife celebrates their legacy with classic hits spanning two decades. Relive the memories with one of the biggest boyband reunions in concert history.', is_major: true,
+                seatCategories: [
+                    { name: 'VIP', price: 'Rp 2.000.000', color: '#fbbf24' },
+                    { name: 'Premium', price: 'Rp 1.650.000', color: '#ec4899' },
+                    { name: 'Regular', price: 'Rp 1.350.000', color: '#60a5fa' }
+                ]
+            },
+            {
+                id: 6, name: 'SEVENTEEN', category: 'CONCERT', location: 'Tennis Indoor Senayan - Jakarta Pusat', date: '2026-03-22',
+                price: '$92', priceIDR: 'Rp 1.450.000', stock: 280, theme_color: '#10b981',
+                image_url: '/images/konser4.jpeg',
+                description: 'SEVENTEEN delivers a spectacular showcase of talent with intricate choreography, vocal prowess, and meaningful messages. A must-see performance for music lovers.', is_major: true,
+                seatCategories: [
+                    { name: 'VIP Circle', price: 'Rp 2.300.000', color: '#fbbf24' },
+                    { name: 'Premium', price: 'Rp 1.750.000', color: '#ec4899' },
+                    { name: 'Regular', price: 'Rp 1.450.000', color: '#60a5fa' }
+                ]
+            },
+            {
+                id: 7, name: 'STRAY KIDS TOUR', category: 'CONCERT', location: 'Madya Stadium, Gelora Bung Karno', date: '2026-04-05',
+                price: '$80', priceIDR: 'Rp 1.275.000', stock: 350, theme_color: '#f97316',
+                image_url: '/images/konser5.jpeg',
+                description: 'Stray Kids brings cutting-edge production and electrifying performances. Experience their unique artistry and strong connection with fans from around the world.', is_major: true,
+                seatCategories: [
+                    { name: 'VIP', price: 'Rp 2.100.000', color: '#fbbf24' },
+                    { name: 'Premium', price: 'Rp 1.650.000', color: '#ec4899' },
+                    { name: 'Regular', price: 'Rp 1.275.000', color: '#60a5fa' }
+                ]
+            },
+            {
+                id: 8, name: 'BLACKPINK', category: 'CONCERT', location: 'Jakarta International Velodrome - Jakarta', date: '2026-04-18',
+                price: '$99', priceIDR: 'Rp 1.575.000', stock: 500, theme_color: '#d2b48c',
+                image_url: '/images/konser6.jpeg',
+                description: 'BLACKPINK returns with their most ambitious world tour yet. Expect spectacular visuals, unmatched charisma, and performances that will leave you breathless.', is_major: true,
+                seatCategories: [
+                    { name: 'VIP Exclusive', price: 'Rp 2.800.000', color: '#fbbf24' },
+                    { name: 'Premium', price: 'Rp 2.000.000', color: '#ec4899' },
+                    { name: 'Regular', price: 'Rp 1.575.000', color: '#60a5fa' }
+                ]
+            },
+            {
+                id: 9, name: 'TWICE', category: 'CONCERT', location: 'Jakarta International Stadium', date: '2026-05-01',
+                price: '$88', priceIDR: 'Rp 1.400.000', stock: 290, theme_color: '#06b6d4',
+                image_url: '/images/konser7.jpeg',
+                description: 'TWICE celebrates joy and connection through music and dance. Join thousands of fans for an unforgettable night of happiness, energy, and pure entertainment.', is_major: true,
+                seatCategories: [
+                    { name: 'VIP', price: 'Rp 2.200.000', color: '#fbbf24' },
+                    { name: 'Premium', price: 'Rp 1.750.000', color: '#ec4899' },
+                    { name: 'Regular', price: 'Rp 1.400.000', color: '#60a5fa' }
+                ]
+            },
+            // Local Events
+            {
+                id: 10, name: 'Jakarta Jazz Fusion 01', category: 'JAZZ', location: 'Kemang Jazz Cafe', date: '2026-01-25',
+                price: 'Rp 250.000', priceIDR: 'Rp 250.000', stock: 80, theme_color: '#a78bfa',
+                image_url: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=500&fit=crop',
+                description: 'Local jazz artists performing contemporary fusion', is_major: false
+            },
+            {
+                id: 11, name: 'Indie Acoustic Night', category: 'INDIE', location: 'Coffee House, Cikini', date: '2026-01-26',
+                price: 'Rp 150.000', priceIDR: 'Rp 150.000', stock: 60, theme_color: '#cbd5e1',
+                image_url: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=500&fit=crop',
+                description: 'Local indie musicians showcase their talent', is_major: false
+            },
+            {
+                id: 12, name: 'Electronic Beats Jakarta', category: 'EDM', location: 'Ground Floor, Senayan', date: '2026-01-27',
+                price: 'Rp 350.000', priceIDR: 'Rp 350.000', stock: 150, theme_color: '#fda29b',
+                image_url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=500&fit=crop',
+                description: 'DJ collective performance with electronic dance music', is_major: false
+            },
+            {
+                id: 13, name: 'HipHop Battle Arena', category: 'HIPHOP', location: 'Warehouse, Tebet', date: '2026-01-28',
+                price: 'Rp 200.000', priceIDR: 'Rp 200.000', stock: 100, theme_color: '#fbbf24',
+                image_url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=500&fit=crop',
+                description: 'Local rappers and beatboxers battle it out', is_major: false
+            },
+            {
+                id: 14, name: 'Reggae Vibes Session', category: 'REGGAE', location: 'Sunset Bar, Pantai Indah', date: '2026-01-29',
+                price: 'Rp 175.000', priceIDR: 'Rp 175.000', stock: 70, theme_color: '#60a5fa',
+                image_url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=500&fit=crop',
+                description: 'Relaxing reggae performance by local band', is_major: false
+            },
+            {
+                id: 15, name: 'Rock Night Jakarta', category: 'ROCK', location: 'Hard Rock Cafe, Blok M', date: '2026-01-30',
+                price: 'Rp 300.000', priceIDR: 'Rp 300.000', stock: 120, theme_color: '#ef4444',
+                image_url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=500&fit=crop',
+                description: 'Original rock bands perform their hits', is_major: false
+            },
+            {
+                id: 16, name: 'Dangdut Party Explosion', category: 'DANGDUT', location: 'Ancol Stage', date: '2026-02-01',
+                price: 'Rp 450.000', priceIDR: 'Rp 450.000', stock: 200, theme_color: '#ec4899',
+                image_url: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=500&fit=crop',
+                description: 'Traditional dangdut with modern twist', is_major: false
+            },
+            {
+                id: 17, name: 'Acoustic Coffee Sessions', category: 'ACOUSTIC', location: 'Bean Here Coffee', date: '2026-02-02',
+                price: 'Rp 125.000', priceIDR: 'Rp 125.000', stock: 50, theme_color: '#d4a574',
+                image_url: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=500&fit=crop',
+                description: 'Intimate acoustic performances with coffee', is_major: false
+            },
+            {
+                id: 18, name: 'Indie Local Showcase', category: 'INDIE', location: 'Wujudkan Cafe - Menteng', date: '2026-02-03',
+                price: 'Rp 120.000', priceIDR: 'Rp 120.000', stock: 65, theme_color: '#a78bfa',
+                image_url: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=500&fit=crop',
+                description: 'Showcase talenta indie lokal terbaru', is_major: false
+            },
+            {
+                id: 19, name: 'Funk & Soul Night', category: 'FUNK', location: 'Old Town Station - Kota Tua', date: '2026-02-04',
+                price: 'Rp 200.000', priceIDR: 'Rp 200.000', stock: 90, theme_color: '#f59e0b',
+                image_url: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=500&fit=crop',
+                description: 'Groove night dengan funk dan soul music', is_major: false
+            },
+            {
+                id: 20, name: 'Stra Lokal Musik', category: 'STREET', location: 'Amphitheater Kemang - Kemang', date: '2026-02-05',
+                price: 'Rp 100.000', priceIDR: 'Rp 100.000', stock: 120, theme_color: '#10b981',
+                image_url: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=500&fit=crop',
+                description: 'Street performers showcase di area Kemang', is_major: false
+            },
+            {
+                id: 21, name: 'Electronic Underground', category: 'ELECTRONIC', location: 'Warehouse Tebet - Tebet', date: '2026-02-06',
+                price: 'Rp 250.000', priceIDR: 'Rp 250.000', stock: 150, theme_color: '#06b6d4',
+                image_url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=500&fit=crop',
+                description: 'Underground electronic music experience', is_major: false
+            },
+            {
+                id: 22, name: 'Pop Lokal Fest', category: 'POP', location: 'Green Park Jakarta - Senayan', date: '2026-02-07',
+                price: 'Rp 150.000', priceIDR: 'Rp 150.000', stock: 200, theme_color: '#ec4899',
+                image_url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=500&fit=crop',
+                description: 'Festival pop artis lokal favorit', is_major: false
+            },
+            {
+                id: 23, name: 'Traditional Gamelan Music', category: 'TRADITIONAL', location: 'Museum Tekstil - Kuningan', date: '2026-02-08',
+                price: 'Rp 75.000', priceIDR: 'Rp 75.000', stock: 80, theme_color: '#d97706',
+                image_url: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=500&fit=crop',
+                description: 'Pertunjukan gamelan tradisional Indonesia', is_major: false
+            },
+            {
+                id: 24, name: 'Kolaborasi Musisi Indie', category: 'COLLABORATION', location: 'Studio Rumpi - Kemakmuran', date: '2026-02-09',
+                price: 'Rp 185.000', priceIDR: 'Rp 185.000', stock: 75, theme_color: '#8b5cf6',
+                image_url: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=500&fit=crop',
+                description: 'Kolaborasi eksklusif musisi indie ternama', is_major: false
+            },
+            {
+                id: 25, name: 'Jazz Night Premium', category: 'JAZZ', location: 'Balai Sarbini - Jakarta Selatan', date: '2026-02-10',
+                price: 'Rp 350.000', priceIDR: 'Rp 350.000', stock: 100, theme_color: '#a78bfa',
+                image_url: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=500&fit=crop',
+                description: 'Premium jazz night dengan musisi internasional', is_major: false
+            },
+            {
+                id: 26, name: 'Reggae Consciousness', category: 'REGGAE', location: 'Sunset Terrace - Balkon Jakarta', date: '2026-02-11',
+                price: 'Rp 160.000', priceIDR: 'Rp 160.000', stock: 110, theme_color: '#059669',
+                image_url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=500&fit=crop',
+                description: 'Consciousness reggae dengan pesan bermakna', is_major: false
+            },
+            {
+                id: 27, name: 'K-Pop Cover Battle', category: 'KPOP', location: 'Play Station Jakarta - Barat', date: '2026-02-12',
+                price: 'Rp 175.000', priceIDR: 'Rp 175.000', stock: 130, theme_color: '#ec4899',
+                image_url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=500&fit=crop',
+                description: 'K-pop cover battle dengan prize menarik', is_major: false
+            }
+        ];
+
+        // ========== GLOBAL ==========
+        let sliderContainer = document.getElementById('slider');
+        let myTickets = [];
+
+        // ========== INIT ==========
+        function init() {
+            initAuth();
+            renderSlider();
+            renderCalendar();
+            updateCalendarGradient();
+            sliderContainer.addEventListener('scroll', updateActiveSlide);
+            setTimeout(() => updateActiveSlide(), 500);
+        }
+
+        // ========== RENDER SLIDER ==========
+        function renderSlider() {
+            const majors = allEvents.filter(e => e.is_major);
+            sliderContainer.innerHTML = '<div class="shrink-0 w-[5vw] md:w-[25vw]"></div>';
+
+            majors.forEach((evt) => {
+                sliderContainer.innerHTML += `
+                <div class="slide-card relative rounded-3xl overflow-hidden aspect-[3/4] shadow-2xl cursor-pointer group" 
+                     data-color="${evt.theme_color}" id="slide-${evt.id}" onclick="openModal(${evt.id})">
+                    <img src="${evt.image_url}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-4 md:p-6 transform translate-y-4 group-hover:translate-y-0 transition duration-300">
+                        <span class="ticket-badge mb-3 inline-block">${evt.category}</span>
+                        <h2 class="text-2xl md:text-3xl font-extrabold leading-tight line-clamp-2">${evt.name}</h2>
+                        <p class="text-white/70 mt-2 text-xs md:text-sm hidden md:block line-clamp-1">${evt.location}</p>
+                    </div>
+                </div>`;
+            });
+
+            sliderContainer.innerHTML += '<div class="shrink-0 w-[5vw] md:w-[25vw]"></div>';
+        }
+
+        // ========== RENDER CALENDAR ==========
+        function renderCalendar() {
+            const minors = allEvents.filter(e => !e.is_major);
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+
+            minors.forEach(evt => {
+                grid.innerHTML += `
+                <div class="calendar-card glass-dark p-4 md:p-5 rounded-2xl hover:shadow-lg transition cursor-pointer overflow-hidden group" 
+                     data-color="${evt.theme_color}" onclick="openModal(${evt.id})" onmouseenter="updateCalendarGradient('${evt.theme_color}')">
+                    <div class="relative h-32 md:h-40 rounded-xl overflow-hidden mb-4">
+                        <img src="${evt.image_url}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <span class="absolute top-2 right-2 ticket-badge text-xs">${evt.category}</span>
+                    </div>
+                    <h4 class="font-bold text-white text-sm md:text-base leading-snug mb-3 line-clamp-2 group-hover:text-indigo-400 transition">${evt.name}</h4>
+                    <div class="space-y-2 text-xs md:text-sm text-white/70">
+                        <p class="flex items-center gap-2"><span>📍</span><span class="line-clamp-1">${evt.location}</span></p>
+                        <p class="flex items-center gap-2"><span>📅</span><span>${new Date(evt.date).toLocaleDateString()}</span></p>
+                        <p class="flex items-center gap-2 font-bold text-indigo-400"><span>💰</span><span>${evt.price}</span></p>
+                    </div>
+                </div>`;
+            });
+
+            // Add scroll listener for dynamic gradient update
+            const grid2 = document.getElementById('calendar-grid');
+            if (grid2) {
+                grid2.addEventListener('mouseenter', function() {
+                    updateCalendarGradient();
+                }, true);
+            }
+        }
+
+        // ========== UPDATE ACTIVE SLIDE ==========
+        function updateActiveSlide() {
+            const cards = document.querySelectorAll('.slide-card');
+            let closest = null;
+            let minDist = Infinity;
+
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const cardCenter = rect.left + (rect.width / 2);
+                const dist = Math.abs(window.innerWidth / 2 - cardCenter);
+
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = card;
+                }
+                
+                if (dist < 250) {
+                    card.classList.add('active');
+                    card.style.opacity = '1';
+                    card.style.filter = 'blur(0px) brightness(1)';
+                } else {
+                    card.classList.remove('active');
+                    card.style.opacity = '0.35';
+                    card.style.filter = 'blur(12px) brightness(0.55)';
+                }
+            });
+
+            if (closest) {
+                const color = closest.getAttribute('data-color');
+                document.getElementById('ambient-bg').style.setProperty('--bg-color', color);
+            }
+        }
+
+        // ========== MODAL ==========
+        function openModal(id) {
+            const evt = allEvents.find(e => e.id === id);
+            if(!evt) return;
+
+            // Update ambient background color sesuai tema event
+            document.getElementById('ambient-bg').style.setProperty('--bg-color', evt.theme_color);
+
+            document.getElementById('modal-img').src = evt.image_url;
+            document.getElementById('modal-title').innerText = evt.name;
+            document.getElementById('modal-cat').innerText = evt.category;
+            document.getElementById('modal-desc').innerText = evt.description;
+            document.getElementById('modal-loc').innerText = evt.location;
+            document.getElementById('modal-date').innerText = new Date(evt.date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('modal-price').innerText = evt.priceIDR || evt.price;
+            document.getElementById('modal-stock').innerText = evt.stock;
+            document.getElementById('modal-btn').onclick = () => bookTicket(id);
+
+            renderSeatCategories(evt);
+
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            document.body.classList.remove('modal-open');
+        }
+
+        function renderSeatCategories(evt) {
+            const container = document.getElementById('seat-categories');
+            if (!evt.seatCategories) {
+                container.innerHTML = '<p class="text-white/60">No categories available</p>';
+                return;
+            }
+
+            container.innerHTML = evt.seatCategories.map((cat, idx) => `
+            <button onclick="selectSeatCategory(${evt.id}, ${idx})" class="glass-dark p-4 rounded-xl border-2 border-white/20 hover:border-white/40 transition text-left group">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-white group-hover:text-indigo-400 transition">${cat.name}</h3>
+                    <span class="text-sm font-bold text-indigo-400">${cat.price}</span>
+                </div>
+                <div class="h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full"></div>
+            </button>
+            `).join('');
+        }
+
+        let selectedSeatCategory = null;
+
+        function selectSeatCategory(eventId, categoryIdx) {
+            const evt = allEvents.find(e => e.id === eventId);
+            if (!evt) return;
+            
+            selectedSeatCategory = {
+                eventId: eventId,
+                categoryIdx: categoryIdx,
+                category: evt.seatCategories[categoryIdx]
+            };
+
+            // Update button styling
+            const buttons = document.querySelectorAll('#seat-categories button');
+            buttons.forEach((btn, idx) => {
+                if (idx === categoryIdx) {
+                    btn.classList.add('border-indigo-500', 'border-2', 'bg-indigo-500/10');
+                    btn.classList.remove('border-white/20');
+                } else {
+                    btn.classList.remove('border-indigo-500', 'border-2', 'bg-indigo-500/10');
+                    btn.classList.add('border-white/20');
+                }
+            });
+        }
+
+        // ========== BOOKING ==========
+        function bookTicket(id) {
+            // Check if user is authenticated
+            if (!currentUser) {
+                alert('Please sign in to book tickets!');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const evt = allEvents.find(e => e.id === id);
+            if(!evt || evt.stock <= 0) {
+                alert('❌ SOLD OUT!');
+                return;
+            }
+
+            // Check if seat category is selected
+            if (!selectedSeatCategory || selectedSeatCategory.eventId !== id) {
+                alert('⚠️ Please select a seat category first!');
+                return;
+            }
+
+            evt.stock--;
+            const bookingRef = 'CONS' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            const category = selectedSeatCategory.category;
+            
+            myTickets.push({
+                id: Math.random(),
+                event: evt.name,
+                category: category.name,
+                date: new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+                bookingDate: new Date().toLocaleDateString('id-ID'),
+                price: category.price,
+                location: evt.location,
+                eventDate: new Date(evt.date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+                bookingRef: bookingRef,
+                image: evt.image_url
+            });
+
+            document.getElementById('modal-stock').innerText = evt.stock;
+            alert(`✅ SUCCESS!\n\nBooking Reference: ${bookingRef}\nCategory: ${category.name}\nPrice: ${category.price}\nRemaining Tickets: ${evt.stock}\n\nCheck "My Tickets" for details!`);
+            
+            // Reset selected category
+            selectedSeatCategory = null;
+            
+            renderMyTickets();
+            closeModal();
+        }
+
+        // ========== SIDEBAR ==========
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            sb.classList.toggle('open');
+            updateBurgerIcon();
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            updateBurgerIcon();
+        }
+
+        function updateBurgerIcon() {
+            const burger = document.getElementById('burger-icon');
+            const sb = document.getElementById('sidebar');
+            
+            if(sb.classList.contains('open')) {
+                burger.innerHTML = '<svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>';
+            } else {
+                burger.innerHTML = '<span class="block w-6 h-0.5 bg-white transition duration-300"></span><span class="block w-4 h-0.5 bg-white transition duration-300"></span><span class="block w-6 h-0.5 bg-white transition duration-300"></span>';
+            }
+        }
+
+        // ========== USER MENU ==========
+        function toggleUserMenu() {
+            const menu = document.getElementById('user-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function closeUserMenu() {
+            document.getElementById('user-menu').classList.add('hidden');
+        }
+
+        // ========== MY TICKETS ==========
+        function toggleMyTickets() {
+            const modal = document.getElementById('my-tickets-modal');
+            modal.classList.toggle('hidden');
+            if(!modal.classList.contains('hidden')) {
+                renderMyTickets();
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function closeMyTickets() {
+            document.getElementById('my-tickets-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function renderMyTickets() {
+            const list = document.getElementById('tickets-list');
+            if(myTickets.length === 0) {
+                list.innerHTML = '<div class="text-center py-12 text-white/50"><p class="text-lg mb-4">No tickets purchased yet</p><p class="text-sm">Book your first concert and it will appear here!</p></div>';
+                return;
+            }
+
+            list.innerHTML = myTickets.map(ticket => {
+                // Badge color based on category
+                let categoryBadge = '';
+                if (ticket.category === 'VIP') {
+                    categoryBadge = 'bg-gradient-to-r from-yellow-500 to-amber-600 text-white';
+                } else if (ticket.category === 'Premium') {
+                    categoryBadge = 'bg-gradient-to-r from-purple-500 to-pink-600 text-white';
+                } else {
+                    categoryBadge = 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white';
+                }
+
+                return `
+                <div class="glass-dark p-6 rounded-2xl border-l-4 border-indigo-500 hover:border-indigo-400 transition-all duration-300 group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-xl font-bold text-white group-hover:text-indigo-400 transition">${ticket.event}</h3>
+                                <span class="px-3 py-1 rounded-full ${categoryBadge} text-xs font-bold shadow-lg">${ticket.category}</span>
+                            </div>
+                            <p class="text-sm text-white/60 mb-1">📍 ${ticket.location || 'Jakarta, Indonesia'}</p>
+                            <p class="text-xs text-white/50">Booking: <span class="font-mono font-bold text-indigo-400">${ticket.bookingRef}</span></p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-bold border border-green-500/30">✓ CONFIRMED</span>
+                    </div>
+                    
+                    <div class="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-4"></div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <p class="text-white/50 text-xs uppercase mb-1 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                                Event Date
+                            </p>
+                            <p class="text-white font-semibold">${ticket.eventDate || ticket.date}</p>
+                        </div>
+                        <div>
+                            <p class="text-white/50 text-xs uppercase mb-1 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path></svg>
+                                Price
+                            </p>
+                            <p class="text-white font-bold text-lg text-indigo-400">${ticket.price}</p>
+                        </div>
+                        <div>
+                            <p class="text-white/50 text-xs uppercase mb-1 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+                                Booked On
+                            </p>
+                            <p class="text-white font-semibold">${ticket.bookingDate}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-white/10">
+                        <div class="flex items-center justify-between">
+                            <button onclick="alert('Ticket details will be sent to your email')" class="text-xs text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
+                                Email Ticket
+                            </button>
+                            <button onclick="alert('QR Code: ${ticket.bookingRef}')" class="text-xs text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clip-rule="evenodd"></path><path d="M11 4a1 1 0 10-2 0v1a1 1 0 002 0V4zM10 7a1 1 0 011 1v1h2a1 1 0 110 2h-3a1 1 0 01-1-1V8a1 1 0 011-1zM16 9a1 1 0 100 2 1 1 0 000-2zM9 13a1 1 0 011-1h1a1 1 0 110 2v2a1 1 0 11-2 0v-3zM7 11a1 1 0 100-2H4a1 1 0 100 2h3zM17 13a1 1 0 01-1 1h-2a1 1 0 110-2h2a1 1 0 011 1zM16 17a1 1 0 100-2h-3a1 1 0 100 2h3z"></path></svg>
+                                Show QR Code
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // ========== UPDATE CALENDAR GRADIENT ==========
+        function updateCalendarGradient(color = null) {
+            const calendarSection = document.getElementById('calendar-section');
+            if (!calendarSection) return;
+
+            let gradientColor = 'rgba(139, 92, 246, 0.15)';
+            
+            if (color) {
+                // Convert hex color to rgba with transparency
+                const hex = color.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                gradientColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
+            } else {
+                // Get first visible card color
+                const visibleCards = document.querySelectorAll('.calendar-card');
+                if (visibleCards.length > 0) {
+                    const firstCard = visibleCards[0];
+                    const color = firstCard.getAttribute('data-color');
+                    if (color) {
+                        const hex = color.replace('#', '');
+                        const r = parseInt(hex.substring(0, 2), 16);
+                        const g = parseInt(hex.substring(2, 4), 16);
+                        const b = parseInt(hex.substring(4, 6), 16);
+                        gradientColor = `rgba(${r}, ${g}, ${b}, 0.15)`;
+                    }
+                }
+            }
+
+            calendarSection.style.setProperty('--calendar-gradient-color', `radial-gradient(circle at 50% 50%, ${gradientColor}, transparent 70%)`);
+            
+            // Also update card glow
+            const cards = document.querySelectorAll('.calendar-card');
+            cards.forEach(card => {
+                const cardColor = card.getAttribute('data-color');
+                if (cardColor) {
+                    const hex = cardColor.replace('#', '');
+                    const r = parseInt(hex.substring(0, 2), 16);
+                    const g = parseInt(hex.substring(2, 4), 16);
+                    const b = parseInt(hex.substring(4, 6), 16);
+                    card.style.setProperty('--card-glow', `rgba(${r}, ${g}, ${b}, 0.2)`);
+                }
+            });
+        }
+
+        // ========== DRAG TO SCROLL ==========
+        let isDown = false, startX, scrollLeft;
+
+        sliderContainer.addEventListener('mousedown', (e) => {
+            isDown = true;
+            sliderContainer.style.cursor = 'grabbing';
+            startX = e.pageX - sliderContainer.offsetLeft;
+            scrollLeft = sliderContainer.scrollLeft;
+        });
+
+        sliderContainer.addEventListener('mouseleave', () => {
+            isDown = false;
+            sliderContainer.style.cursor = 'grab';
+        });
+
+        sliderContainer.addEventListener('mouseup', () => {
+            isDown = false;
+            sliderContainer.style.cursor = 'grab';
+        });
+
+        sliderContainer.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - sliderContainer.offsetLeft;
+            const walk = (x - startX) * 1.2;
+            sliderContainer.scrollLeft = scrollLeft - walk;
+            updateActiveSlide();
+        });
+
+        sliderContainer.style.cursor = 'grab';
+
+        // ========== CLOSE MENUS ON OUTSIDE CLICK ==========
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#user-menu') && !e.target.closest('button[onclick*="toggleUserMenu"]')) {
+                closeUserMenu();
+            }
+            if (!e.target.closest('#sidebar') && !e.target.closest('button[onclick*="toggleSidebar"]')) {
+                closeSidebar();
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>

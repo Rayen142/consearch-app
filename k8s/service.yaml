@@ -1,0 +1,194 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: consearch-backend
+  namespace: consearch
+  labels:
+    app: consearch
+    component: backend
+    tier: application
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP  # Internal service, accessed via Ingress/LoadBalancer
+  selector:
+    app: consearch
+    component: backend
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+    protocol: TCP
+  sessionAffinity: None
+  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: consearch-backend-headless
+  namespace: consearch
+  labels:
+    app: consearch
+    component: backend
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service for direct pod access
+  selector:
+    app: consearch
+    component: backend
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+    protocol: TCP
+
+---
+# LoadBalancer service (optional - untuk expose ke external)
+apiVersion: v1
+kind: Service
+metadata:
+  name: consearch-backend-lb
+  namespace: consearch
+  labels:
+    app: consearch
+    component: backend
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"  # Untuk AWS
+    # Atau untuk GCP:
+    # cloud.google.com/load-balancer-type: "Internal"
+spec:
+  type: LoadBalancer
+  selector:
+    app: consearch
+    component: backend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3000
+    protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+
+---
+# Ingress untuk routing HTTP/HTTPS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: consearch-ingress
+  namespace: consearch
+  labels:
+    app: consearch
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "20"
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    # CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    # Body size limit
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+spec:
+  tls:
+  - hosts:
+    - consearch.example.com
+    - api.consearch.example.com
+    secretName: consearch-tls-cert
+  rules:
+  - host: consearch.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: consearch-backend
+            port:
+              number: 3000
+  - host: api.consearch.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: consearch-backend
+            port:
+              number: 3000
+
+---
+# Network Policy untuk security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: consearch-backend-netpol
+  namespace: consearch
+spec:
+  podSelector:
+    matchLabels:
+      app: consearch
+      component: backend
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow dari Nginx/Ingress
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 3000
+  # Allow dari Prometheus untuk scraping
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    - podSelector:
+        matchLabels:
+          app: prometheus
+    ports:
+    - protocol: TCP
+      port: 3000
+  # Allow dari pods dalam namespace yang sama
+  - from:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 3000
+  egress:
+  # Allow ke PostgreSQL
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  # Allow ke DNS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow ke external (untuk OAuth, etc)
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80

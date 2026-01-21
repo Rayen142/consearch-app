@@ -1,0 +1,261 @@
+global:
+  resolve_timeout: 5m
+  # Konfigurasi SMTP untuk email notifications
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@consearch.com'
+  smtp_auth_username: 'alerts@consearch.com'
+  smtp_auth_password: 'your-app-password-here'  # Gunakan App Password untuk Gmail
+  smtp_require_tls: true
+
+  # Konfigurasi Slack (opsional)
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+
+# Template untuk customisasi pesan alert
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Routing configuration
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'cluster', 'service', 'severity']
+  group_wait: 10s         # Tunggu 10s sebelum kirim notifikasi pertama
+  group_interval: 5m      # Interval antara notifikasi untuk alert yang sama
+  repeat_interval: 4h     # Kirim ulang notifikasi setiap 4 jam jika masih active
+  
+  # Routes untuk different severity levels
+  routes:
+    # Critical alerts - notifikasi segera ke multiple channels
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 5s        # Kirim lebih cepat untuk critical
+      repeat_interval: 30m  # Remind lebih sering
+      continue: true        # Lanjutkan ke route berikutnya juga
+      
+    # Warning alerts
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      group_wait: 30s
+      repeat_interval: 2h
+      continue: true
+
+    # Performance alerts (termasuk high latency)
+    - match:
+        alert_type: performance
+      receiver: 'performance-alerts'
+      group_wait: 1m
+      repeat_interval: 1h
+      
+    # Database alerts
+    - match:
+        service: database
+      receiver: 'database-alerts'
+      group_wait: 30s
+      repeat_interval: 1h
+      
+    # Business metrics alerts
+    - match:
+        alert_type: business
+      receiver: 'business-alerts'
+      group_wait: 5m
+      repeat_interval: 6h
+
+receivers:
+  # Default receiver - catch-all
+  - name: 'default'
+    email_configs:
+      - to: 'devops-team@consearch.com'
+        headers:
+          Subject: '[ConSearch] {{ .GroupLabels.alertname }} - {{ .GroupLabels.severity }}'
+        html: |
+          <h2>Alert: {{ .GroupLabels.alertname }}</h2>
+          <p><strong>Severity:</strong> {{ .GroupLabels.severity }}</p>
+          <p><strong>Description:</strong> {{ range .Alerts }}{{ .Annotations.description }}{{ end }}</p>
+          <p><strong>Time:</strong> {{ range .Alerts }}{{ .StartsAt }}{{ end }}</p>
+
+  # Critical alerts - multiple notification channels
+  - name: 'critical-alerts'
+    # Email untuk critical alerts
+    email_configs:
+      - to: 'oncall@consearch.com, devops-lead@consearch.com'
+        send_resolved: true
+        headers:
+          Subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        html: |
+          <html>
+          <body style="font-family: Arial, sans-serif;">
+            <h1 style="color: #d32f2f;">🚨 CRITICAL ALERT</h1>
+            <h2>{{ .GroupLabels.alertname }}</h2>
+            <table style="border-collapse: collapse; width: 100%;">
+              <tr style="background-color: #f5f5f5;">
+                <td style="padding: 10px; border: 1px solid #ddd;"><strong>Service:</strong></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">{{ .GroupLabels.service }}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><strong>Severity:</strong></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">{{ .GroupLabels.severity }}</td>
+              </tr>
+              <tr style="background-color: #f5f5f5;">
+                <td style="padding: 10px; border: 1px solid #ddd;"><strong>Instance:</strong></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">{{ range .Alerts }}{{ .Labels.instance }}{{ end }}</td>
+              </tr>
+            </table>
+            <h3>Details:</h3>
+            {{ range .Alerts }}
+            <p><strong>Summary:</strong> {{ .Annotations.summary }}</p>
+            <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+            <p><strong>Started at:</strong> {{ .StartsAt }}</p>
+            {{ if .Annotations.runbook_url }}
+            <p><a href="{{ .Annotations.runbook_url }}" style="color: #1976d2;">View Runbook</a></p>
+            {{ end }}
+            {{ end }}
+          </body>
+          </html>
+    
+    # Slack untuk critical alerts
+    slack_configs:
+      - channel: '#critical-alerts'
+        send_resolved: true
+        title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        text: |
+          *Service:* {{ .GroupLabels.service }}
+          *Severity:* {{ .GroupLabels.severity }}
+          {{ range .Alerts }}
+          *Summary:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        color: 'danger'
+    
+    # Webhook untuk integrasi dengan PagerDuty/OpsGenie
+    webhook_configs:
+      - url: 'http://pagerduty-webhook:8080/alert'
+        send_resolved: true
+
+  # Warning alerts
+  - name: 'warning-alerts'
+    email_configs:
+      - to: 'devops-team@consearch.com'
+        send_resolved: true
+        headers:
+          Subject: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+        html: |
+          <html>
+          <body style="font-family: Arial, sans-serif;">
+            <h2 style="color: #f57c00;">⚠️ WARNING</h2>
+            <h3>{{ .GroupLabels.alertname }}</h3>
+            {{ range .Alerts }}
+            <p><strong>Summary:</strong> {{ .Annotations.summary }}</p>
+            <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+            <p><strong>Service:</strong> {{ .Labels.service }}</p>
+            <p><strong>Started at:</strong> {{ .StartsAt }}</p>
+            {{ end }}
+          </body>
+          </html>
+    
+    slack_configs:
+      - channel: '#alerts'
+        send_resolved: true
+        title: '⚠️ {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        color: 'warning'
+
+  # Performance alerts (High Latency, dll)
+  - name: 'performance-alerts'
+    email_configs:
+      - to: 'performance-team@consearch.com'
+        send_resolved: true
+        headers:
+          Subject: '📊 Performance Alert: {{ .GroupLabels.alertname }}'
+        html: |
+          <html>
+          <body>
+            <h2 style="color: #f57c00;">📊 Performance Degradation Detected</h2>
+            <h3>{{ .GroupLabels.alertname }}</h3>
+            {{ range .Alerts }}
+            <div style="background-color: #fff3e0; padding: 15px; margin: 10px 0; border-left: 4px solid #f57c00;">
+              <p><strong>Issue:</strong> {{ .Annotations.summary }}</p>
+              <p><strong>Details:</strong> {{ .Annotations.description }}</p>
+              <p><strong>Metric Value:</strong> {{ .Value }}</p>
+              {{ if .Annotations.dashboard }}
+              <p><a href="{{ .Annotations.dashboard }}">View Dashboard</a></p>
+              {{ end }}
+              {{ if .Annotations.runbook_url }}
+              <p><a href="{{ .Annotations.runbook_url }}">Troubleshooting Guide</a></p>
+              {{ end }}
+            </div>
+            <hr>
+            <h4>Recommended Actions:</h4>
+            <ul>
+              <li>Check application logs for errors</li>
+              <li>Review recent deployments</li>
+              <li>Check database query performance</li>
+              <li>Monitor resource usage (CPU, Memory)</li>
+              <li>Consider horizontal scaling if load is high</li>
+            </ul>
+            {{ end }}
+          </body>
+          </html>
+    
+    slack_configs:
+      - channel: '#performance'
+        send_resolved: true
+        title: '📊 {{ .GroupLabels.alertname }}'
+        text: |
+          *Performance Issue Detected*
+          {{ range .Alerts }}
+          {{ .Annotations.description }}
+          Current Value: {{ .Value }}
+          {{ if .Annotations.dashboard }}Dashboard: {{ .Annotations.dashboard }}{{ end }}
+          {{ end }}
+        color: 'warning'
+
+  # Database alerts
+  - name: 'database-alerts'
+    email_configs:
+      - to: 'dba-team@consearch.com'
+        send_resolved: true
+        headers:
+          Subject: '🗄️ Database Alert: {{ .GroupLabels.alertname }}'
+    
+    slack_configs:
+      - channel: '#database-alerts'
+        send_resolved: true
+
+  # Business metrics alerts
+  - name: 'business-alerts'
+    email_configs:
+      - to: 'business-team@consearch.com, devops-team@consearch.com'
+        send_resolved: true
+        headers:
+          Subject: '💼 Business Metric Alert: {{ .GroupLabels.alertname }}'
+    
+    slack_configs:
+      - channel: '#business-metrics'
+        send_resolved: true
+
+# Inhibit rules - mencegah notifikasi redundant
+inhibit_rules:
+  # Jangan kirim warning jika ada critical alert untuk resource yang sama
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance', 'service']
+  
+  # Jika service down, suppress alert lainnya dari service tersebut
+  - source_match:
+      alertname: 'ServiceDown'
+    target_match_re:
+      alertname: '.*'
+    equal: ['instance', 'service']
+  
+  # Suppress high latency alerts jika error rate sudah tinggi
+  - source_match:
+      alert_type: 'availability'
+      severity: 'critical'
+    target_match:
+      alert_type: 'performance'
+    equal: ['instance', 'service']
+

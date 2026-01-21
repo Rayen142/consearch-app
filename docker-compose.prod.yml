@@ -1,0 +1,161 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: consearch-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-consearch_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-consearch_password}
+      POSTGRES_DB: ${POSTGRES_DB:-consearch_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-consearch_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - consearch-network
+    labels:
+      - "com.example.description=PostgreSQL Database"
+
+  # Node.js Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: consearch-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-consearch_user}:${POSTGRES_PASSWORD:-consearch_password}@postgres:5432/${POSTGRES_DB:-consearch_db}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      SESSION_SECRET: ${SESSION_SECRET:-session-secret-key}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./app.js:/app/app.js
+      - ./package.json:/app/package.json
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - consearch-network
+    labels:
+      - "com.example.description=Node.js Backend API"
+
+  # Nginx Reverse Proxy & Load Balancer
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: consearch-nginx
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+      - "443:8443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./public:/usr/share/nginx/html:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - consearch-network
+    labels:
+      - "com.example.description=Nginx Reverse Proxy"
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: consearch-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - backend
+    networks:
+      - consearch-network
+    labels:
+      - "com.example.description=Prometheus Time-Series Database"
+
+  # Grafana Visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: consearch-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD:-admin}
+      GF_SERVER_ROOT_URL: http://localhost:3001
+      GF_PATHS_CONFIG: /etc/grafana/grafana.ini
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - consearch-network
+    labels:
+      - "com.example.description=Grafana Dashboards"
+
+  # AlertManager
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: consearch-alertmanager
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    networks:
+      - consearch-network
+    labels:
+      - "com.example.description=AlertManager"
+
+volumes:
+  postgres_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  alertmanager_data:
+    driver: local
+
+networks:
+  consearch-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

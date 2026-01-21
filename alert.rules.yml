@@ -1,0 +1,179 @@
+groups:
+  - name: latency_alerts
+    interval: 30s
+    rules:
+      # Alert ketika P95 latency melebihi 500ms
+      - alert: HighP95Latency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          service: backend
+          alert_type: performance
+        annotations:
+          summary: "High P95 latency detected on {{ $labels.instance }}"
+          description: "P95 latency is {{ $value | humanizeDuration }} (threshold: 500ms) on {{ $labels.instance }}. This may indicate performance degradation."
+          runbook_url: "https://wiki.example.com/runbooks/high-latency"
+          dashboard: "http://grafana:3000/d/app-performance"
+
+      # Alert ketika P99 latency sangat tinggi (critical)
+      - alert: CriticalP99Latency
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 1m
+        labels:
+          severity: critical
+          service: backend
+          alert_type: performance
+        annotations:
+          summary: "Critical P99 latency on {{ $labels.instance }}"
+          description: "P99 latency is {{ $value | humanizeDuration }} (threshold: 1s). Immediate action required!"
+          runbook_url: "https://wiki.example.com/runbooks/critical-latency"
+
+      # Alert untuk average latency yang tinggi
+      - alert: HighAverageLatency
+        expr: rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m]) > 0.3
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+          alert_type: performance
+        annotations:
+          summary: "High average latency on {{ $labels.instance }}"
+          description: "Average latency is {{ $value | humanizeDuration }} over the last 5 minutes."
+
+  - name: error_rate_alerts
+    interval: 30s
+    rules:
+      # Alert ketika error rate tinggi
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{code=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          service: backend
+          alert_type: availability
+        annotations:
+          summary: "High error rate detected on {{ $labels.instance }}"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%) for route {{ $labels.route }}"
+          runbook_url: "https://wiki.example.com/runbooks/high-error-rate"
+
+      # Alert ketika ada 5xx errors
+      - alert: ServerErrors
+        expr: rate(http_requests_total{code=~"5.."}[1m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          service: backend
+          alert_type: availability
+        annotations:
+          summary: "Server errors detected on {{ $labels.instance }}"
+          description: "{{ $value }} server errors per second on route {{ $labels.route }}"
+
+  - name: resource_alerts
+    interval: 30s
+    rules:
+      # Alert ketika CPU usage tinggi
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+          alert_type: resource
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}% (threshold: 80%)"
+          runbook_url: "https://wiki.example.com/runbooks/high-cpu"
+
+      # Alert ketika memory usage tinggi
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / 1024 / 1024 > 512
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+          alert_type: resource
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value }}MB (threshold: 512MB)"
+
+  - name: database_alerts
+    interval: 30s
+    rules:
+      # Alert ketika database connection pool hampir penuh
+      - alert: DatabaseConnectionPoolHigh
+        expr: pg_pool_size - pg_pool_idle > pg_pool_size * 0.8
+        for: 3m
+        labels:
+          severity: warning
+          service: database
+          alert_type: resource
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "Connection pool usage is above 80%. Consider scaling or optimizing queries."
+
+      # Alert ketika query latency database tinggi
+      - alert: SlowDatabaseQueries
+        expr: rate(pg_query_duration_seconds_sum[5m]) / rate(pg_query_duration_seconds_count[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+          alert_type: performance
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query duration is {{ $value | humanizeDuration }} (threshold: 100ms)"
+
+  - name: availability_alerts
+    interval: 30s
+    rules:
+      # Alert ketika service down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          alert_type: availability
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute"
+          runbook_url: "https://wiki.example.com/runbooks/service-down"
+
+      # Alert ketika request rate sangat tinggi (possible DDoS)
+      - alert: UnusuallyHighTraffic
+        expr: rate(http_requests_total[1m]) > 1000
+        for: 2m
+        labels:
+          severity: warning
+          service: backend
+          alert_type: security
+        annotations:
+          summary: "Unusually high traffic detected"
+          description: "Request rate is {{ $value }} req/s (threshold: 1000 req/s). Possible DDoS attack."
+
+  - name: business_metrics_alerts
+    interval: 30s
+    rules:
+      # Alert ketika tidak ada tiket terjual dalam periode tertentu
+      - alert: NoTicketSales
+        expr: rate(tickets_sold_total[10m]) == 0
+        for: 10m
+        labels:
+          severity: warning
+          service: backend
+          alert_type: business
+        annotations:
+          summary: "No ticket sales in the last 10 minutes"
+          description: "There have been no ticket purchases. This might indicate a problem with the purchase flow."
+
+      # Alert ketika ticket sales spike (unusual activity)
+      - alert: UnusualTicketSalesSpike
+        expr: rate(tickets_sold_total[1m]) > avg_over_time(rate(tickets_sold_total[1m])[1h]) * 5
+        for: 2m
+        labels:
+          severity: info
+          service: backend
+          alert_type: business
+        annotations:
+          summary: "Unusual spike in ticket sales"
+          description: "Ticket sales rate is 5x higher than the hourly average. This might be a successful campaign or unusual activity."

@@ -1,0 +1,251 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: consearch-backend-hpa
+  namespace: consearch
+  labels:
+    app: consearch
+    component: backend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: consearch-backend
+  
+  # Jumlah pod minimum dan maximum
+  minReplicas: 3
+  maxReplicas: 20
+  
+  # Metrics untuk autoscaling
+  metrics:
+  # CPU-based scaling
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70  # Scale up ketika CPU > 70%
+  
+  # Memory-based scaling
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80  # Scale up ketika Memory > 80%
+  
+  # Custom metrics dari Prometheus (opsional, perlu metrics server)
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "1000"  # Scale up jika > 1000 req/s per pod
+  
+  # Latency-based scaling
+  - type: Pods
+    pods:
+      metric:
+        name: http_request_duration_p95
+      target:
+        type: AverageValue
+        averageValue: "500m"  # Scale up jika p95 latency > 500ms
+  
+  # Behavior untuk mengontrol scaling speed
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # Tunggu 5 menit sebelum scale down
+      policies:
+      - type: Percent
+        value: 50              # Scale down max 50% pods per periode
+        periodSeconds: 60      # Setiap 1 menit
+      - type: Pods
+        value: 2               # Atau max 2 pods per periode
+        periodSeconds: 60
+      selectPolicy: Min        # Pilih policy yang lebih konservatif
+    scaleUp:
+      stabilizationWindowSeconds: 0  # Scale up immediately
+      policies:
+      - type: Percent
+        value: 100             # Scale up max 100% (double) per periode
+        periodSeconds: 15      # Setiap 15 detik
+      - type: Pods
+        value: 4               # Atau max 4 pods per periode
+        periodSeconds: 15
+      selectPolicy: Max        # Pilih policy yang lebih agresif
+
+---
+# Vertical Pod Autoscaler (VPA) - optional, untuk adjust resource requests/limits
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: consearch-backend-vpa
+  namespace: consearch
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: consearch-backend
+  
+  updatePolicy:
+    updateMode: "Auto"  # Auto update resource requests (restart pods)
+    # Atau "Initial" - hanya set saat pod pertama kali dibuat
+    # Atau "Off" - hanya recommend, tidak auto-apply
+  
+  resourcePolicy:
+    containerPolicies:
+    - containerName: backend
+      minAllowed:
+        cpu: 100m
+        memory: 128Mi
+      maxAllowed:
+        cpu: 2
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+      # Hanya recommend, jangan auto-scale untuk production yang stabil
+      mode: "Off"
+
+---
+# PodDisruptionBudget - memastikan minimum pods available saat maintenance
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: consearch-backend-pdb
+  namespace: consearch
+spec:
+  minAvailable: 2  # Minimal 2 pods harus running
+  # Atau bisa pakai maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: consearch
+      component: backend
+
+---
+# ConfigMap untuk HPA configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hpa-config
+  namespace: consearch
+data:
+  scaling-strategy.md: |
+    # Autoscaling Strategy untuk ConSearch Backend
+    
+    ## HPA Configuration
+    - **Min Replicas**: 3 (untuk high availability)
+    - **Max Replicas**: 20 (batas atas untuk cost control)
+    
+    ## Scaling Triggers
+    1. **CPU Usage > 70%**: Indikasi beban komputasi tinggi
+    2. **Memory Usage > 80%**: Mencegah OOM kills
+    3. **Request Rate > 1000 req/s per pod**: Traffic spike
+    4. **P95 Latency > 500ms**: Performance degradation
+    
+    ## Scaling Behavior
+    ### Scale Up (Aggressive)
+    - Stabilization: 0s (immediate response)
+    - Rate: 100% per 15s atau 4 pods per 15s
+    - Strategy: Max (pilih yang lebih agresif)
+    
+    ### Scale Down (Conservative)
+    - Stabilization: 300s (5 minutes)
+    - Rate: 50% per 60s atau 2 pods per 60s
+    - Strategy: Min (pilih yang lebih konservatif)
+    
+    ## Best Practices
+    1. Monitor HPA decisions di Kubernetes events
+    2. Set PodDisruptionBudget untuk availability
+    3. Use VPA untuk optimize resource requests
+    4. Combine dengan Cluster Autoscaler untuk node scaling
+    
+    ## Troubleshooting
+    ```bash
+    # Check HPA status
+    kubectl get hpa -n consearch
+    kubectl describe hpa consearch-backend-hpa -n consearch
+    
+    # Check HPA metrics
+    kubectl top pods -n consearch
+    
+    # View HPA events
+    kubectl get events -n consearch --field-selector involvedObject.name=consearch-backend-hpa
+    ```
+    
+    ## Testing Autoscaling
+    ```bash
+    # Generate load dengan k6
+    k6 run loadtest.js
+    
+    # Watch scaling in real-time
+    kubectl get hpa -n consearch -w
+    
+    # Check pod count
+    kubectl get pods -n consearch -l component=backend -w
+    ```
+
+---
+# ServiceMonitor untuk Prometheus Operator (opsional)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: consearch-backend
+  namespace: consearch
+  labels:
+    app: consearch
+    component: backend
+spec:
+  selector:
+    matchLabels:
+      app: consearch
+      component: backend
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+    # Relabeling untuk custom labels
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_name]
+      targetLabel: pod
+    - sourceLabels: [__meta_kubernetes_namespace]
+      targetLabel: namespace
+
+---
+# PrometheusRule untuk custom alerts (jika pakai Prometheus Operator)
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: consearch-backend-alerts
+  namespace: consearch
+  labels:
+    app: consearch
+    prometheus: kube-prometheus
+spec:
+  groups:
+  - name: hpa-scaling-alerts
+    interval: 30s
+    rules:
+    - alert: HPAMaxedOut
+      expr: |
+        kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler="consearch-backend-hpa"}
+        >= 
+        kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler="consearch-backend-hpa"}
+      for: 5m
+      labels:
+        severity: warning
+        component: autoscaling
+      annotations:
+        summary: "HPA has reached maximum replicas"
+        description: "The HPA for consearch-backend has been at maximum capacity ({{ $value }} pods) for 5 minutes. Consider increasing maxReplicas or optimizing application performance."
+    
+    - alert: HPAUnableToScale
+      expr: |
+        kube_horizontalpodautoscaler_status_condition{condition="ScalingLimited",status="true"}
+      for: 10m
+      labels:
+        severity: warning
+        component: autoscaling
+      annotations:
+        summary: "HPA unable to scale"
+        description: "HPA {{ $labels.horizontalpodautoscaler }} is unable to scale. Check resource limits and cluster capacity."

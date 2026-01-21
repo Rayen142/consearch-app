@@ -1,0 +1,62 @@
+global:
+  scrape_interval: 15s        # Interval scraping default
+  evaluation_interval: 15s    # Evaluasi rules setiap 15 detik
+  scrape_timeout: 10s         # Timeout untuk setiap scrape
+  
+  external_labels:
+    cluster: 'consearch-cluster'
+    environment: 'production'
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+# Load rules untuk alerting
+rule_files:
+  - '/etc/prometheus/alert.rules.yml'
+
+scrape_configs:
+  # Job untuk scraping metrics dari aplikasi Node.js
+  - job_name: 'consearch-app'
+    scrape_interval: 5s       # Scrape lebih sering untuk app metrics
+    scrape_timeout: 5s
+    metrics_path: '/metrics'  # Endpoint metrics dari prom-client
+    static_configs:
+      - targets: ['app:3000']
+        labels:
+          service: 'backend'
+          tier: 'application'
+    # Relabel untuk menambahkan informasi tambahan
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'backend-node'
+
+  # Job untuk scraping Prometheus itu sendiri (self-monitoring)
+  - job_name: 'prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          tier: 'monitoring'
+
+  # Job untuk Node Exporter (jika menggunakan untuk monitoring OS-level metrics)
+  - job_name: 'node-exporter'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          service: 'node-exporter'
+          tier: 'infrastructure'
+
+  # Job untuk PostgreSQL Exporter (monitoring database)
+  - job_name: 'postgres-exporter'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+        labels:
+          service: 'postgres'
+          tier: 'database'
